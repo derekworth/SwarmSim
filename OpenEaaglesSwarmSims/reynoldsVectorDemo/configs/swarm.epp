@@ -1,0 +1,183 @@
+( Station
+	tcPriority: 0.0
+	#include "networkSetup.epp" // enables DIS -> SIMDIS
+	
+	ownship: UAV_S1
+	simulation: ( Simulation
+		latitude: 37.0
+		longitude: -116.0
+		players: {
+			UAV_S1: ( UAV
+				id: 1
+				type: "F-16"
+				signature: ( SigSphere radius: 2.0 )
+				initXPos: ( NauticalMiles 0.0 )
+				initYPos: ( NauticalMiles 0.0 )
+				initAlt: ( Feet 18000 )
+				initHeading: ( Degrees 270 )
+				initVelocity: 260
+				side: blue
+				positionFreeze: false
+				components: {
+					dynamicsModel: ( JSBSimModel
+						rootDir: "../shared/data/JSBSim/"
+						model: "Rascal"
+					)
+					pilot: ( SwarmAP
+						mode: "swarm"  // available modes: "nav", "swarm", and "manual"
+						rollKp: 0.05  pitchKp: 0.05  yawKp: 0.02   altKp: 0.05  hdgKp: 0.7  maxRoll: 30
+						rollKi: 0.002 pitchKi: 0.002 yawKi: 0.001  altKi: 0.0   hdgKi: 0.0  maxPitch: 15
+						rollKd: 0.001 pitchKd: 0.001 yawKd: 0.0005 altKd: 0.001 hdgKd: 0.01 minPitch: -10
+					)
+					oca: ( OnboardControlAgent
+						sFactor: 0.5
+						aFactor: 10
+						cFactor: 1
+						commDistance: ( NauticalMiles 15.0 )
+						desiredSeparation: 1000
+					)
+				}
+			)
+			UAV_N1: ( UAV
+				id: 2
+				type: "F-16"
+				signature: ( SigSphere radius: 2.0 )
+				initXPos: ( NauticalMiles 0.0 )
+				initYPos: ( NauticalMiles 0.0 )
+				initAlt: ( Feet 18000 )
+				initHeading: ( Degrees 270 )
+				initVelocity: 260
+				side: red
+				positionFreeze: false
+				components: {
+					dynamicsModel: ( JSBSimModel
+						rootDir: "../shared/data/JSBSim/"
+						model: "Rascal"
+					)
+					pilot: ( SwarmAP
+						mode: "nav"
+						rollKp: 0.05  pitchKp: 0.05  yawKp: 0.02   altKp: 0.05  hdgKp: 0.7  maxRoll: 30
+						rollKi: 0.002 pitchKi: 0.002 yawKi: 0.001  altKi: 0.0   hdgKi: 0.0  maxPitch: 15
+						rollKd: 0.001 pitchKd: 0.001 yawKd: 0.0005 altKd: 0.001 hdgKd: 0.01 minPitch: -10
+					)
+					nav: ( Navigation
+						utc: ( Seconds 0 )
+						route: ( Route
+							autoSeqDistance: 0.25
+							components: {
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 1.2 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  1.1 ) altitude: ( Feet 19000 ) ) // WP02
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 0.5 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  2.9 ) altitude: ( Feet 20000 ) ) // WP04
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 2.7 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  3.0 ) altitude: ( Feet 18500 ) ) // WP06
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 2.9 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  0.4 ) altitude: ( Feet 17000 ) ) // WP08
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  0.0 ) altitude: ( Feet 18000 ) ) // WP10
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  1.5 ) altitude: ( Feet 18500 ) ) // WP01
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 2.1 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  2.0 ) altitude: ( Feet 19500 ) ) // WP03
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 1.4 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  4.0 ) altitude: ( Feet 19000 ) ) // WP05
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 3.4 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  1.8 ) altitude: ( Feet 18000 ) ) // WP07
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 1.5 ) longitude: ( LatLon direction: "w" degrees: 115 minutes: 59.5 ) altitude: ( Feet 17500 ) ) // WP09
+							}
+						)
+					)
+				}
+			)
+			UAV_N2: ( UAV
+				id: 3
+				type: "F-16"
+				signature: ( SigSphere radius: 2.0 )
+				initXPos: ( NauticalMiles 0.0 )
+				initYPos: ( NauticalMiles 0.0 )
+				initAlt: ( Feet 18000 )
+				initHeading: ( Degrees 315 )
+				initVelocity: 260
+				side: red
+				positionFreeze: false
+				components: {
+					dynamicsModel: ( JSBSimModel
+						rootDir: "../shared/data/JSBSim/"
+						model: "Rascal"
+					)
+					pilot: ( SwarmAP
+						mode: "nav"
+						rollKp: 0.05  pitchKp: 0.05  yawKp: 0.02   altKp: 0.05  hdgKp: 0.7  maxRoll: 30
+						rollKi: 0.002 pitchKi: 0.002 yawKi: 0.001  altKi: 0.0   hdgKi: 0.0  maxPitch: 15
+						rollKd: 0.001 pitchKd: 0.001 yawKd: 0.0005 altKd: 0.001 hdgKd: 0.01 minPitch: -10
+					)
+					nav: ( Navigation
+						utc: ( Seconds 0 )
+						route: ( Route
+							autoSeqDistance: 0.25
+							components: {
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  1.5 ) altitude: ( Feet 18500 ) ) // WP01
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 1.2 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  1.1 ) altitude: ( Feet 19000 ) ) // WP02
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 2.1 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  2.0 ) altitude: ( Feet 19500 ) ) // WP03
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 0.5 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  2.9 ) altitude: ( Feet 20000 ) ) // WP04
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 1.4 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  4.0 ) altitude: ( Feet 19000 ) ) // WP05
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 2.7 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  3.0 ) altitude: ( Feet 18500 ) ) // WP06
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 3.4 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  1.8 ) altitude: ( Feet 18000 ) ) // WP07
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 2.9 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  0.4 ) altitude: ( Feet 17000 ) ) // WP08
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 1.5 ) longitude: ( LatLon direction: "w" degrees: 115 minutes: 59.5 ) altitude: ( Feet 17500 ) ) // WP09
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  0.0 ) altitude: ( Feet 18000 ) ) // WP10
+							}
+						)
+					)
+				}
+			)
+			UAV_N3: ( UAV
+				id: 4
+				type: "F-16"
+				signature: ( SigSphere radius: 2.0 )
+				initXPos: ( NauticalMiles 0.0 )
+				initYPos: ( NauticalMiles 0.0 )
+				initAlt: ( Feet 18000 )
+				initHeading: ( Degrees 100 )
+				initVelocity: 260
+				side: red
+				positionFreeze: false
+				components: {
+					dynamicsModel: ( JSBSimModel
+						rootDir: "../shared/data/JSBSim/"
+						model: "Rascal"
+					)
+					pilot: ( SwarmAP
+						mode: "nav"
+						rollKp: 0.05  pitchKp: 0.05  yawKp: 0.02   altKp: 0.05  hdgKp: 0.7  maxRoll: 30
+						rollKi: 0.002 pitchKi: 0.002 yawKi: 0.001  altKi: 0.0   hdgKi: 0.0  maxPitch: 15
+						rollKd: 0.001 pitchKd: 0.001 yawKd: 0.0005 altKd: 0.001 hdgKd: 0.01 minPitch: -10
+					)
+					nav: ( Navigation
+						utc: ( Seconds 0 )
+						route: ( Route
+							autoSeqDistance: 0.25
+							components: {
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 2.7 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  3.0 ) altitude: ( Feet 18500 ) ) // WP06
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  1.5 ) altitude: ( Feet 18500 ) ) // WP01
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 3.4 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  1.8 ) altitude: ( Feet 18000 ) ) // WP07
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 1.2 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  1.1 ) altitude: ( Feet 19000 ) ) // WP02
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 2.9 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  0.4 ) altitude: ( Feet 17000 ) ) // WP08
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 2.1 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  2.0 ) altitude: ( Feet 19500 ) ) // WP03
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 1.5 ) longitude: ( LatLon direction: "w" degrees: 115 minutes: 59.5 ) altitude: ( Feet 17500 ) ) // WP09
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 0.5 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  2.9 ) altitude: ( Feet 20000 ) ) // WP04
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  0.0 ) altitude: ( Feet 18000 ) ) // WP10
+								( Steerpoint latitude: ( LatLon direction: "n" degrees: 37 minutes: 1.4 ) longitude: ( LatLon direction: "w" degrees: 116 minutes:  4.0 ) altitude: ( Feet 19000 ) ) // WP05
+							}
+						)
+					)
+				}
+			)
+            WP01:   ( Player id:  5 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  1.5 ) initAlt: ( Feet 18500 ) )
+            WP02:   ( Player id:  6 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 1.2 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  1.1 ) initAlt: ( Feet 19000 ) )
+            WP03:   ( Player id:  7 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 2.1 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  2.0 ) initAlt: ( Feet 19500 ) )
+            WP04:   ( Player id:  8 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 0.5 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  2.9 ) initAlt: ( Feet 20000 ) )
+            WP05:   ( Player id:  9 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 1.4 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  4.0 ) initAlt: ( Feet 19000 ) )
+            WP06:   ( Player id: 10 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 2.7 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  3.0 ) initAlt: ( Feet 18500 ) )
+            WP07:   ( Player id: 11 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 3.4 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  1.8 ) initAlt: ( Feet 18000 ) )
+            WP08:   ( Player id: 12 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 2.9 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  0.4 ) initAlt: ( Feet 17000 ) )
+            WP09:   ( Player id: 13 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 1.5 ) initLongitude: ( LatLon direction: "w" degrees: 115 minutes: 59.5 ) initAlt: ( Feet 17500 ) )
+            WP10:   ( Player id: 14 type: "M1A2" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  0.0 ) initAlt: ( Feet 18000 ) )
+            vect_X: ( Player id: 15 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  0.0 ) initAlt: ( Feet 18000 ) )
+            vect_A: ( Player id: 16 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  0.0 ) initAlt: ( Feet 18000 ) )
+            vect_S: ( Player id: 17 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  0.0 ) initAlt: ( Feet 18000 ) )
+            vect_C: ( Player id: 18 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) initLatitude: ( LatLon direction: "n" degrees: 37 minutes: 0.0 ) initLongitude: ( LatLon direction: "w" degrees: 116 minutes:  0.0 ) initAlt: ( Feet 18000 ) )
+		}
+	)
+)
