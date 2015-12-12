@@ -1,0 +1,44 @@
+#
+# visual studio directories
+#
+vs2008/
+vs2010/
+vs2012/
+vs2013/
+codeblocks/
+codelite/
+
+#
+# visual studio generated files
+#
+*.idb
+*.ilk
+*.pdb
+
+#
+# eclipse files (for now)
+#
+.cproject
+.project
+.settings/
+
+#
+# Qt not needed directories (created upon build)
+#
+tmp/
+build/qt/*Makefile*
+build/qt/*/*Makefile*
+build/qt/*/*/*Makefile*
+*.pro.user
+
+# executables
+*.exe
+
+# except for premake tool
+!premake4.exe
+
+# compiled object files
+*.[oa]
+
+# backup files
+*.bak

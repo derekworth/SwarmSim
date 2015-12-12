@@ -1,0 +1,76 @@
+
+# -----------------------------------------------------------------------------
+# OpenEaagles 'make' configuration file
+# -----------------------------------------------------------------------------
+
+# ---
+# OpenEaagles home directory
+#   Use the environment variable OE_ROOT to locate OpenEaagles
+#   -- No Default 
+#   -- see $(OE_ROOT)/setenv
+# ---
+
+# ---
+# OpenEaagles 3rd party root 
+#   Use the environment variable OE_3RD_PARTY_ROOT to locate the include and
+#   lib directories for the OpenEaagles 3rd party software(e.g., cigi, JSBSim)
+#   -- Default path is "/usr/local
+#   -- see $(OE_ROOT)/setenv
+# ---
+ifndef OE_3RD_PARTY_ROOT
+   OE_3RD_PARTY_ROOT = /usr/local
+endif
+
+# ---
+# library directories
+# ---
+OPENEAAGLES_LIB_DIR = $(OE_ROOT)/lib/linux
+
+# ---
+# Uncomment if using FTGL version 2.1.2 or earlier
+# ---
+# CPPFLAGS += -DFTGL_2_1_2 
+
+# ---
+# Uncomment if using JSBSim version 0.9.13 or earlier
+# ---
+# CPPFLAGS += -DJSBSIM_0_9_13 
+
+# ---
+# freetype2 include path
+# ---
+FREETYPE2_INC_DIR = /usr/include/freetype2
+
+# ---
+# HLA RTI
+# ---
+HLA_INC_DIR = /usr/local/include/hla13
+
+# ---
+# deviceIO device options
+# ---
+JOYSTICKDEVICE = 1
+
+# ---
+# JSBSim include directory
+# ---
+JSBSIM_INC_DIR = $(OE_3RD_PARTY_ROOT)/include/JSBSim
+
+# ---
+# Optimize?
+# ---
+CPPFLAGS += -g -O2
+
+# ---
+# Modify standard flags
+# ---
+CPPFLAGS += -fPIC
+CPPFLAGS += -I$(OE_ROOT)/include -I$(OE_3RD_PARTY_ROOT)/include
+#CPPFLAGS += -isystem$(OE_ROOT)/include -isystem$(OE_3RD_PARTY_ROOT)/include
+CPPFLAGS += -pthread
+CPPFLAGS += -Wno-long-long
+CPPFLAGS += -Wall
+CPPFLAGS += -std=c++11
+# warn of old c-style casts, so they can be replaced
+#CPPFLAGS += -Wold-style-cast
+
