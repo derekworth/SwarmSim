@@ -6,7 +6,7 @@
 #ifndef __Eaagles_Swarms_UAV_H_
 #define __Eaagles_Swarms_UAV_H__
 
-#include "SimOCA.h"
+#include "OnboardControlAgent.h"
 #include "openeaagles/simulation/AirVehicle.h"
 
 namespace Eaagles {
@@ -25,8 +25,8 @@ public:
 	virtual bool setOnboardControlAgent(Basic::Pair* const agent); // Sets our Onboard Control Agent (for swarming)
 	virtual void updateTC(const LCreal dt = 0.0);
 	
-	SimOCA* getOCA();               
-	const SimOCA* getOCA() const;
+	OnboardControlAgent* getOCA();               
+	const OnboardControlAgent* getOCA() const; 
 
 protected:
 	virtual void updateOCA();

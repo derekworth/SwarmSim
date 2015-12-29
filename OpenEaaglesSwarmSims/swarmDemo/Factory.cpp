@@ -6,7 +6,7 @@
 #include "openeaagles/basic/Object.h"
 
 #include "UAV.h"
-#include "SwarmAP.h"
+#include "SimAP.h"
 #include "OnboardControlAgent.h"
 
 // class factories
@@ -33,8 +33,8 @@ namespace Eaagles {
 			if ( std::strcmp(name, UAV::getFactoryName()) == 0 ) {
 				obj = new UAV();
 			}
-			if ( std::strcmp(name, SwarmAP::getFactoryName()) == 0 ) {
-				obj = new SwarmAP();
+			if ( std::strcmp(name, SimAP::getFactoryName()) == 0 ) {
+				obj = new SimAP();
 			}
 			if ( std::strcmp(name, OnboardControlAgent::getFactoryName()) == 0 ) {
 				obj = new OnboardControlAgent();

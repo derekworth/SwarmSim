@@ -14,14 +14,16 @@
     <ClCompile Include="..\..\reynoldsVectorDemo\Factory.cpp" />
     <ClCompile Include="..\..\reynoldsVectorDemo\main.cpp" />
     <ClCompile Include="..\..\reynoldsVectorDemo\OnboardControlAgent.cpp" />
-    <ClCompile Include="..\..\reynoldsVectorDemo\SwarmAP.cpp" />
+    <ClCompile Include="..\..\reynoldsVectorDemo\SimAP.cpp" />
     <ClCompile Include="..\..\reynoldsVectorDemo\UAV.cpp" />
+    <ClCompile Include="..\..\swarmDemo\SwarmAutopilot.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\reynoldsVectorDemo\Factory.h" />
     <ClInclude Include="..\..\reynoldsVectorDemo\OnboardControlAgent.h" />
-    <ClInclude Include="..\..\reynoldsVectorDemo\SwarmAP.h" />
+    <ClInclude Include="..\..\reynoldsVectorDemo\SimAP.h" />
     <ClInclude Include="..\..\reynoldsVectorDemo\UAV.h" />
+    <ClInclude Include="..\..\swarmDemo\SwarmAutopilot.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\reynoldsVectorDemo\configs\networkSetup.epp" />

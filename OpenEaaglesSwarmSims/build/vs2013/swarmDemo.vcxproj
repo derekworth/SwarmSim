@@ -14,13 +14,15 @@
     <ClCompile Include="..\..\swarmDemo\Factory.cpp" />
     <ClCompile Include="..\..\swarmDemo\main.cpp" />
     <ClCompile Include="..\..\swarmDemo\OnboardControlAgent.cpp" />
-    <ClCompile Include="..\..\swarmDemo\SwarmAP.cpp" />
+    <ClCompile Include="..\..\swarmDemo\SimAP.cpp" />
+    <ClCompile Include="..\..\swarmDemo\SwarmAutopilot.cpp" />
     <ClCompile Include="..\..\swarmDemo\UAV.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\swarmDemo\Factory.h" />
     <ClInclude Include="..\..\swarmDemo\OnboardControlAgent.h" />
-    <ClInclude Include="..\..\swarmDemo\SwarmAP.h" />
+    <ClInclude Include="..\..\swarmDemo\SimAP.h" />
+    <ClInclude Include="..\..\swarmDemo\SwarmAutopilot.h" />
     <ClInclude Include="..\..\swarmDemo\UAV.h" />
   </ItemGroup>
   <ItemGroup>

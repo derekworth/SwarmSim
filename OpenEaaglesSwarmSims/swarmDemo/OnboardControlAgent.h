@@ -7,14 +7,13 @@
 #define __Eaagles_Swarms_OnboardControlAgent_H__
 
 #include "openeaagles/simulation/System.h"
-
 #include "openeaagles/basic/units/Distances.h"
 
 using namespace std;
 
 namespace Eaagles {
 	namespace Basic { class Number; }
-	namespace Simulation { class Steerpoint; class System; }
+	namespace Simulation { class System; }
 
 namespace Swarms {
 
@@ -43,8 +42,6 @@ public:
 	virtual bool setCommDistance(const double dist);     // dist = distance (in meters)
 	virtual bool setDesiredSeparation(const double sep); // sep = separation (in meters)
 
-	virtual Simulation::Steerpoint* getWaypoint() const { return wp; }
-
 	virtual void updateData(const LCreal dt = 0.0);
 	
 	virtual bool setSlotSeparationFactor(const Basic::Number* const msg);
@@ -61,7 +58,6 @@ private:
 	double cFactor;
 	double commDist;   // in meters
 	double desiredSep; // in meters
-	Simulation::Steerpoint* wp;
 };
 
 }

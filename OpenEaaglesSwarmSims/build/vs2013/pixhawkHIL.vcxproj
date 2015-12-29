@@ -15,28 +15,27 @@
     <None Include="..\..\pixhawkHIL\configs\swarm.epp" />
     <None Include="..\..\pixhawkHIL\makeEdl.bat" />
     <None Include="..\..\pixhawkHIL\swarm.edl" />
-    <None Include="ClassDiagram.cd" />
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\pixhawkHIL\AutoPilot.h" />
     <ClInclude Include="..\..\pixhawkHIL\Factory.h" />
     <ClInclude Include="..\..\pixhawkHIL\OnboardControlAgent.h" />
     <ClInclude Include="..\..\pixhawkHIL\PixhawkAP.h" />
     <ClInclude Include="..\..\pixhawkHIL\Serial.h" />
+    <ClInclude Include="..\..\pixhawkHIL\SerialClass.h" />
     <ClInclude Include="..\..\pixhawkHIL\SimAP.h" />
-    <ClInclude Include="..\..\pixhawkHIL\SimOCA.h" />
+    <ClInclude Include="..\..\pixhawkHIL\SwarmAutopilot.h" />
     <ClInclude Include="..\..\pixhawkHIL\UAV.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\pixhawkHIL\AutoPilot.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\Factory.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\main.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\OnboardControlAgent.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\PixhawkAP.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\Serial.cpp" />
+    <ClCompile Include="..\..\pixhawkHIL\SerialClass.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\SimAP.cpp" />
-    <ClCompile Include="..\..\pixhawkHIL\SimOCA.cpp" />
+    <ClCompile Include="..\..\pixhawkHIL\SwarmAutopilot.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\UAV.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

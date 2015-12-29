@@ -7,8 +7,8 @@
 
 #include "UAV.h"
 #include "SimAP.h"
-#include "SimOCA.h"
 #include "PixhawkAP.h"
+#include "OnboardControlAgent.h"
 
 // class factories
 #include "openeaagles/basic/Factory.h"
@@ -40,8 +40,8 @@ namespace Eaagles {
 			if (std::strcmp(name, PixhawkAP::getFactoryName()) == 0) {
 				obj = new PixhawkAP();
 			}
-			if ( std::strcmp(name, SimOCA::getFactoryName()) == 0 ) {
-				obj = new SimOCA();
+			if (std::strcmp(name, OnboardControlAgent::getFactoryName()) == 0) {
+				obj = new OnboardControlAgent();
 			}
 
 			// Framework libraries

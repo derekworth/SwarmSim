@@ -44,7 +44,7 @@ namespace Eaagles {
 		const char* configFile = "swarm.edl";
 
 		// Background frame rate (Hz)
-		const int bgRate = 50;
+		const int bgRate = 60;
 
 		// System descriptions
 		static Simulation::Station* station = 0;
@@ -115,17 +115,18 @@ namespace Eaagles {
 			double simTime = 0.0;                 // Simulator time reference
 			double startTime = getComputerTime(); // Time of day (sec) run started
 
-			//// prints the mode of each UAV
-			//int i = 1;
-			//while (true) {
-			//	Eaagles::Swarms::UAV* uav = dynamic_cast<Eaagles::Swarms::UAV *>(station->getPlayers()->getPosition(i)->object());
-			//	if (uav == 0) break;
-			//	Eaagles::Swarms::AutoPilot* ap = dynamic_cast<Eaagles::Swarms::SimAP *>(uav->getPilot());
-			//	if (ap == 0) {
-			//		ap = dynamic_cast<Eaagles::Swarms::PixhawkAP *>(uav->getPilot());
-			//	}
-			//	cout << "Player(" << i++ << ") Mode: " << ap->getMode() << endl;
-			//}
+			// prints the mode of each UAV
+			int i = 1;
+			while (true) {
+				Eaagles::Basic::Pair* pair = station->getPlayers()->getPosition(i);
+				if (pair == nullptr) break;
+				Eaagles::Swarms::UAV* uav = dynamic_cast<Eaagles::Swarms::UAV*>(pair->object());
+				if (uav != nullptr) {
+					Eaagles::Swarms::SwarmAutopilot* ap = dynamic_cast<Eaagles::Swarms::SwarmAutopilot *>(uav->getPilot());
+					cout << "Player(" << i << ") Mode: " << ap->getMode() << endl;
+				}
+				i++;
+			}
 
 			cout << "Simulation running..." << endl;
 			int min = 20;
@@ -141,7 +142,7 @@ namespace Eaagles {
 				double nextFrameStart = simTime - elapsedTime;
 				int sleepTime = static_cast<int>(nextFrameStart*1000.0);
 
-				//// print wait times to console
+				// print wait times to console
 				//if (sleepTime < min) { min = sleepTime; }
 				//if (sleepTime > max) { max = sleepTime;	}
 				//cout << "\rWAIT TIMES: min(" << min << ") max(" << max << ") cur(" << sleepTime << ")          ";

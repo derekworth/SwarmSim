@@ -36,9 +36,12 @@ public:
 	LCreal getFlightPath() const override;
 	LCreal getCalibratedAirspeed() const override;
 
-	LCreal getTemperature() const;
-	LCreal getPressureAltitude() const;
-	LCreal getDifferentialPressure() const;
+	// Added for Pixhawk HIL interface
+	LCreal getAbsolutePressureMillibar() const;
+	LCreal getDifferentialPressureMillibar() const;
+	LCreal getPressureAltitudeFt() const;
+	LCreal getPressureAltitudeM() const;
+	LCreal getTemperatureC() const;
 	JSBSim::FGFDMExec* getJSBSim() const;
 
     LCreal getGrossWeight() const override;

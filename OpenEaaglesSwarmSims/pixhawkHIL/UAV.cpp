@@ -1,6 +1,6 @@
 
 #include "UAV.h"
-#include "SimOCA.h"
+#include "OnboardControlAgent.h"
 
 #include "openeaagles/simulation/RfSensor.h"
 #include "openeaagles/simulation/StoresMgr.h"
@@ -115,7 +115,7 @@ bool UAV::setOnboardControlAgent(Basic::Pair* const agent)
 		oca = 0;
 		ok = true;
 	}
-	else if (agent->object()->isClassType(typeid(SimOCA))) {
+	else if ( agent->object()->isClassType(typeid(OnboardControlAgent)) ) {
 		if (oca != 0) oca->unref();
 		oca = agent;
 		oca->ref();
@@ -127,7 +127,7 @@ bool UAV::setOnboardControlAgent(Basic::Pair* const agent)
 void UAV::updateOCA()
 {
 	loadOCA = false;
-	setOnboardControlAgent(findByType(typeid(Swarms::SimOCA)));
+	setOnboardControlAgent( findByType(typeid(Swarms::OnboardControlAgent)) );
 }
 
 //------------------------------------------------------------------------------
@@ -143,14 +143,14 @@ void UAV::updateTC(const LCreal dt)
    BaseClass::updateTC(dt);
 }
 
-SimOCA* UAV::getOCA()
+OnboardControlAgent* UAV::getOCA()
 {
-	return (oca != 0) ? (static_cast<SimOCA*>(oca->object())) : 0;
+	return (oca != 0) ? (static_cast<OnboardControlAgent*>(oca->object())) : 0;
 }
 
-const SimOCA* UAV::getOCA() const
+const OnboardControlAgent* UAV::getOCA() const
 {
-	return (oca != 0) ? (static_cast<SimOCA*>(oca->object())) : 0;
+	return (oca != 0) ? (static_cast<OnboardControlAgent*>(oca->object())) : 0;
 }
 
 } // End Swarms namespace

@@ -1,14 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{88dc92a3-2d96-4a7f-aac8-baf10baef555}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{96b57fd4-aaf3-4a2a-b459-5cdf2b37b060}</UniqueIdentifier>
-    </Filter>
     <Filter Include="OE Files">
       <UniqueIdentifier>{9c99e54a-bd91-4afc-97a2-5f037e53dca3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CPP Files">
+      <UniqueIdentifier>{96b57fd4-aaf3-4a2a-b459-5cdf2b37b060}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -24,62 +21,61 @@
     <None Include="..\..\pixhawkHIL\configs\networkSetup.epp">
       <Filter>OE Files</Filter>
     </None>
-    <None Include="ClassDiagram.cd" />
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\pixhawkHIL\Factory.h">
-      <Filter>Header Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\pixhawkHIL\PixhawkAP.h">
-      <Filter>Header Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\pixhawkHIL\Serial.h">
-      <Filter>Header Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\pixhawkHIL\SimAP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\pixhawkHIL\SimOCA.h">
-      <Filter>Header Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\pixhawkHIL\UAV.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\pixhawkHIL\AutoPilot.h">
-      <Filter>Header Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\pixhawkHIL\OnboardControlAgent.h">
-      <Filter>Header Files</Filter>
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pixhawkHIL\SwarmAutopilot.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\..\pixhawkHIL\SerialClass.h">
+      <Filter>CPP Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\pixhawkHIL\Factory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\pixhawkHIL\PixhawkAP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\pixhawkHIL\Serial.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\pixhawkHIL\SimAP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\pixhawkHIL\SimOCA.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\pixhawkHIL\UAV.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\pixhawkHIL\AutoPilot.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\pixhawkHIL\OnboardControlAgent.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\pixhawkHIL\main.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHIL\OnboardControlAgent.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHIL\PixhawkAP.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHIL\Serial.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHIL\SimAP.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHIL\SwarmAutopilot.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHIL\UAV.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHIL\SerialClass.cpp">
+      <Filter>CPP Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 //#include "UAV.h"
 
 #include "Factory.h"
-#include "SwarmAP.h"
+#include "SimAP.h"
 #include "UAV.h"
 
 #include "openeaagles/basic/Parser.h"
@@ -40,7 +40,7 @@ namespace Eaagles {
 		const char* configFile = "swarm.edl";
 
 		// Background frame rate (Hz)
-		const int bgRate = 50;
+		const int bgRate = 60;
 
 		// System descriptions
 		static Simulation::Station* station = 0;

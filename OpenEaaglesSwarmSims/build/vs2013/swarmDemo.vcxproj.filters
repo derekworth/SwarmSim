@@ -1,45 +1,48 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{f28aca0e-7e35-41a7-b582-78c68ae28e4e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{b3d1e31c-512d-4bee-bfc3-bcfe807ad723}</UniqueIdentifier>
-    </Filter>
     <Filter Include="OE Files">
       <UniqueIdentifier>{77512a2d-8e4f-4803-96d9-9a390d4e0e04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CPP Files">
+      <UniqueIdentifier>{b3d1e31c-512d-4bee-bfc3-bcfe807ad723}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\swarmDemo\Factory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\swarmDemo\SwarmAP.h">
-      <Filter>Header Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\swarmDemo\UAV.h">
-      <Filter>Header Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\swarmDemo\OnboardControlAgent.h">
-      <Filter>Header Files</Filter>
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\swarmDemo\SimAP.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\swarmDemo\SwarmAutopilot.h">
+      <Filter>CPP Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\swarmDemo\Factory.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\swarmDemo\main.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\swarmDemo\OnboardControlAgent.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\swarmDemo\SwarmAP.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\swarmDemo\SimAP.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\swarmDemo\SwarmAutopilot.cpp">
+      <Filter>CPP Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\swarmDemo\UAV.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>CPP Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

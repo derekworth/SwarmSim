@@ -2,24 +2,30 @@
 
 //------------------------------------------------------------------------------
 // Class: SimAP
+//   Provides a simulated autopilot designed to fly a small fixed-wing UAV
+//   with traditional control surfaces (ailerions, rudder, and elevator).
 //------------------------------------------------------------------------------
 #ifndef __Eaagles_Swarms_SimAP_H__
 #define __Eaagles_Swarms_SimAP_H__
 
-#include "openeaagles/dynamics/JSBSimModel.h"
-#include "AutoPilot.h"
-
-using namespace std;
+#include "SwarmAutopilot.h"
 
 namespace Eaagles {
 	namespace Basic { class Number; }
-	namespace Simulation { class Vehicle; }
+	namespace Simulation {
+		class Navigation;
+		class Route; 
+		class Steerpoint; 
+		class Vehicle;
+	}
+	namespace Dynamics { class JSBSimModel; }
+	namespace Swarms { class UAV; }
 
 namespace Swarms {
 
-class SimAP : public AutoPilot
+class SimAP : public SwarmAutopilot
 {
-	DECLARE_SUBCLASS(SimAP, AutoPilot)
+	DECLARE_SUBCLASS(SimAP, SwarmAutopilot)
 
 public:
 	SimAP();
@@ -74,7 +80,8 @@ public:
 	virtual bool setMaxPitch(const double max);
 	virtual bool setMaxRoll(const double max);
 	
-	virtual bool setMode(const Basic::String* const m);
+	virtual void setMode(const Basic::String* const m);
+	virtual void setWaypoint(const osg::Vec3& pos, const LCreal altM);
 
 	virtual void updateData(const LCreal dt = 0.0);
 
@@ -112,8 +119,6 @@ protected:
 	double getRudder();
 	void setPitchSetPoint();
 	void setRollSetPoint();
-
-	void printTestData();
 	
 	void flyUav();
 
@@ -162,6 +167,12 @@ private:
 	double derivHdgError;
 
 	Eaagles::Basic::safe_ptr<const Basic::String> mode;
+
+	Swarms::UAV* uav;
+	Simulation::Navigation* nav;
+	Simulation::Route* route;
+	Simulation::Steerpoint* wp;
+	Dynamics::JSBSimModel* fdm;
 };
 
 }

@@ -1,15 +1,11 @@
 #include "SimAP.h"
+#include "OnboardControlAgent.h"
 #include "UAV.h"
 
-#include "openeaagles/basic/Number.h"
-#include "openeaagles/simulation/Player.h"
 #include "openeaagles/simulation/Navigation.h"
-#include "openeaagles/simulation/Steerpoint.h"
 #include "openeaagles/simulation/Route.h"
-
-// used for testing
-#include <iostream>
-#include <iomanip>
+#include "openeaagles/simulation/Steerpoint.h"
+#include "openeaagles/dynamics/JSBSimModel.h"
 
 namespace Eaagles {
 namespace Swarms {
@@ -43,24 +39,24 @@ BEGIN_SLOTTABLE(SimAP)
 END_SLOTTABLE(SimAP)
 
 BEGIN_SLOT_MAP(SimAP)
-	ON_SLOT(  1, setSlotRollKp,   Basic::Number)
-	ON_SLOT(  2, setSlotRollKi,   Basic::Number)
-	ON_SLOT(  3, setSlotRollKd,   Basic::Number)
-	ON_SLOT(  4, setSlotPitchKp,  Basic::Number)
-	ON_SLOT(  5, setSlotPitchKi,  Basic::Number)
-	ON_SLOT(  6, setSlotPitchKd,  Basic::Number)
-	ON_SLOT(  7, setSlotYawKp,    Basic::Number)
-	ON_SLOT(  8, setSlotYawKi,    Basic::Number)
-	ON_SLOT(  9, setSlotYawKd,    Basic::Number)
-	ON_SLOT( 10, setSlotAltKp,    Basic::Number)
-	ON_SLOT( 11, setSlotAltKi,    Basic::Number)
-	ON_SLOT( 12, setSlotAltKd,    Basic::Number)
-	ON_SLOT( 13, setSlotHdgKp,    Basic::Number)
-	ON_SLOT( 14, setSlotHdgKi,    Basic::Number)
-	ON_SLOT( 15, setSlotHdgKd,    Basic::Number)
-	ON_SLOT( 16, setSlotMinPitch, Basic::Number)
-	ON_SLOT( 17, setSlotMaxPitch, Basic::Number)
-	ON_SLOT( 18, setSlotMaxRoll,  Basic::Number)
+	ON_SLOT(  1, setSlotRollKp,   Basic::Number) // default = 0.05
+	ON_SLOT(  2, setSlotRollKi,   Basic::Number) // default = 0.002
+	ON_SLOT(  3, setSlotRollKd,   Basic::Number) // default = 0.001
+	ON_SLOT(  4, setSlotPitchKp,  Basic::Number) // default = 0.05
+	ON_SLOT(  5, setSlotPitchKi,  Basic::Number) // default = 0.002
+	ON_SLOT(  6, setSlotPitchKd,  Basic::Number) // default = 0.001
+	ON_SLOT(  7, setSlotYawKp,    Basic::Number) // default = 0.02
+	ON_SLOT(  8, setSlotYawKi,    Basic::Number) // default = 0.001
+	ON_SLOT(  9, setSlotYawKd,    Basic::Number) // default = 0.0005
+	ON_SLOT( 10, setSlotAltKp,    Basic::Number) // default = 0.05
+	ON_SLOT( 11, setSlotAltKi,    Basic::Number) // default = 0.0
+	ON_SLOT( 12, setSlotAltKd,    Basic::Number) // default = 0.001
+	ON_SLOT( 13, setSlotHdgKp,    Basic::Number) // default = 0.7
+	ON_SLOT( 14, setSlotHdgKi,    Basic::Number) // default = 0.0
+	ON_SLOT( 15, setSlotHdgKd,    Basic::Number) // default = 0.01
+	ON_SLOT( 16, setSlotMinPitch, Basic::Number) // default = -10
+	ON_SLOT( 17, setSlotMaxPitch, Basic::Number) // default = 15
+	ON_SLOT( 18, setSlotMaxRoll,  Basic::Number) // default = 30
 	ON_SLOT( 19, setSlotMode,     Basic::String) // modes: "nav", "swarm" (autonomous flight), and "manual"; default = "nav"
 END_SLOT_MAP()                                                                        
 
@@ -78,29 +74,29 @@ SimAP::SimAP()
 {
 	STANDARD_CONSTRUCTOR()
 
-	rollKp   = 0.0;
-	rollKi   = 0.0;
-	rollKd   = 0.0;
+	rollKp   = 0.05;
+	rollKi   = 0.002;
+	rollKd   = 0.001;
 			
-	pitchKp  = 0.0;
-	pitchKi  = 0.0;
-	pitchKd  = 0.0;
+	pitchKp  = 0.05;
+	pitchKi  = 0.002;
+	pitchKd  = 0.001;
 			
-	yawKp    = 0.0;
-	yawKi    = 0.0;
-	yawKd    = 0.0;
+	yawKp    = 0.02;
+	yawKi    = 0.001;
+	yawKd    = 0.0005;
 			
-	altKp    = 0.0;
+	altKp    = 0.05;
 	altKi    = 0.0;
-	altKd    = 0.0;
+	altKd    = 0.001;
 			
-	hdgKp    = 0.0;
+	hdgKp    = 0.7;
 	hdgKi    = 0.0;
-	hdgKd    = 0.0;
+	hdgKd    = 0.01;
 
-	minPitch = -25.0;
-	maxPitch = 25.0;
-	maxRoll  = 45.0;
+	minPitch = -10.0;
+	maxPitch = 15.0;
+	maxRoll  = 30.0;
 
 	integRollError = 0.0;
 	derivRollError = 0.0;
@@ -121,8 +117,14 @@ SimAP::SimAP()
 	integHdgError = 0.0;
 	derivHdgError = 0.0;
 
-	mode = 0;
+	mode = nullptr;
 	setMode(new Basic::String("nav"));
+
+	uav   = nullptr;
+	nav   = nullptr;
+	route = nullptr;
+	wp    = nullptr;
+	fdm   = nullptr;
 }
 
 //------------------------------------------------------------------------------------
@@ -132,8 +134,8 @@ void SimAP::copyData(const SimAP& org, const bool cc)
 {
 	BaseClass::copyData(org);
 
-	if(cc) {
-		mode = 0;
+	if (cc) {
+		mode = nullptr;
 	}
 
 	rollKp  = org.rollKp;
@@ -179,10 +181,16 @@ void SimAP::copyData(const SimAP& org, const bool cc)
 	integHdgError   = org.integHdgError;
 	derivHdgError   = org.derivHdgError;
 
-	Basic::String* m = 0;
-	if(org.mode != 0) m = org.mode->clone();
+	Basic::String* m = nullptr;
+	if(org.mode != nullptr) m = org.mode->clone();
 	mode = m;
-	if(m != 0) m->unref();
+	if (m != nullptr) m->unref();
+
+	uav   = nullptr;
+	nav   = nullptr;
+	route = nullptr;
+	wp    = nullptr;
+	fdm   = nullptr;
 }
 
 //------------------------------------------------------------------------------------
@@ -190,7 +198,17 @@ void SimAP::copyData(const SimAP& org, const bool cc)
 //------------------------------------------------------------------------------------
 void SimAP::deleteData()
 {
-	mode = 0;
+	if (wp != nullptr) {
+		// remove waypoint from player's navigation route (if exists)
+		route->deleteSteerpoint(wp);
+		// delete waypoint
+		wp->unref();
+		route->unref();
+		nav->unref();
+		uav->unref();
+		fdm->unref();
+	}
+	mode = nullptr;
 }
 
 //------------------------------------------------------------------------------------
@@ -305,10 +323,9 @@ bool SimAP::setMaxRoll(const double max)
    return true;
 }
 
-bool SimAP::setMode(const Basic::String* const m)
+void SimAP::setMode(const Basic::String* const m)
 {
    mode = m;
-   return true;
 }
 
 //------------------------------------------------------------------------------------
@@ -466,9 +483,12 @@ const char* SimAP::getMode() const
 //------------------------------------------------------------------------------
 // ELEVATOR control for flight toward destination altitude
 //------------------------------------------------------------------------------
+
 double SimAP::getFwdStick() {
-	Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
-	if(uav == 0) return 0;
+	if (uav == nullptr) {
+		uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
+		if (uav == nullptr) return 0;
+	}
 
 	double processValue = uav->getPitchD();
 	double error = pitchSetPoint - processValue;
@@ -483,9 +503,12 @@ double SimAP::getFwdStick() {
 //------------------------------------------------------------------------------
 // AILERON control for flight toward destination heading
 //------------------------------------------------------------------------------
+
 double SimAP::getSideStick() {
-	Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
-	if(uav == 0) return 0;
+	if (uav == nullptr) {
+		uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
+		if (uav == nullptr) return 0;
+	}
 
 	double diff = rollSetPoint - sideStickSP;
 	if(diff > 0.3 || diff < -0.3) {
@@ -512,62 +535,70 @@ double SimAP::getSideStick() {
 //------------------------------------------------------------------------------
 // ALTITUDE control
 //------------------------------------------------------------------------------
-int c = 0;
+
 void SimAP::setPitchSetPoint() {
-	const Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
-	if(uav == 0) return;
+	if (uav == nullptr) {
+		uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
+		if (uav == nullptr) return;
+	}
 
 	// Do we have valid NAV steering data?
-	const Eaagles::Simulation::Navigation* nav = uav->getNavigation();
-	if(nav == 0 || !nav->isNavSteeringValid()) return;
+	if (nav == nullptr) {
+		nav = uav->getNavigation();
+		if (nav == nullptr || !nav->isNavSteeringValid()) return;
+	}
 
-	// Do we have NAV commanded altitude?
-	const Eaagles::Simulation::Route* route = nav->getPriRoute();
-	if (route == 0) return;
+	// Do we have a route?
+	if (route == nullptr) {
+		route = nav->getPriRoute();
+		if (route == 0) return;
+	}
 
 	// Do we have a Steerpoint
 	const Eaagles::Simulation::Steerpoint* sp = route->getSteerpoint();
+	if (sp == nullptr || !sp->isCmdAltValid()) return;
 
-	if (sp == 0 || !sp->isCmdAltValid()) return;
 
-	double setPoint = sp->getCmdAltitudeFt();
-
-	double processValue = uav->getAltitudeFt();
-	double error = setPoint - processValue;
+	double setPoint = sp->getCmdAltitudeFt();   // desired alt
+	double processValue = uav->getAltitudeFt(); // current alt
+	double error = setPoint - processValue;     // diff
 
 	integAltError += altKi * error;
-
 	pitchSetPoint = altKp * error + integAltError + altKd * (error - derivAltError);
-
 	derivAltError = error;
-	if(pitchSetPoint > maxPitch) pitchSetPoint = maxPitch;
-	else if(pitchSetPoint < minPitch) pitchSetPoint = minPitch;
+	if (pitchSetPoint > maxPitch) pitchSetPoint = maxPitch;
+	else if (pitchSetPoint < minPitch) pitchSetPoint = minPitch;
 }
 
 //------------------------------------------------------------------------------
 // HEADING control
 //------------------------------------------------------------------------------
+
 void SimAP::setRollSetPoint() {
-	Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
-	if(uav == 0) return;
+	if (uav == nullptr) {
+		uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
+		if (uav == nullptr) return;
+	}
 
 	// Do we have valid NAV steering data?
-	const Eaagles::Simulation::Navigation* nav = uav->getNavigation();
-	if(nav == 0 || !nav->isNavSteeringValid()) return;
+	if (nav == nullptr) {
+		nav = uav->getNavigation();
+		if (nav == nullptr || !nav->isNavSteeringValid()) return;
+	}
 
-	double setPoint = nav->getTrueBrgDeg();
+	double setPoint = nav->getTrueBrgDeg();	  // desired hdg
+	double processValue = uav->getHeadingD(); // current hdg
+	double error = setPoint - processValue;	  // diff
 
-	double processValue = uav->getHeadingD();
-	double error = setPoint - processValue;
-	if(error < -180) error += 360; // normalizes error between -180 (turn left) to 180 (turn right)
+	if (error < -180) error += 360; // normalizes error between -180 (turn left) to 180 (turn right)
 
 	integHdgError += hdgKi * error;
 
 	rollSetPoint = hdgKp * error + integHdgError + hdgKd * (error - derivHdgError);
-	if(rollSetPoint < 2 && rollSetPoint > -2) rollSetPoint = 0;
+	if (rollSetPoint < 2 && rollSetPoint > -2) rollSetPoint = 0;
 
-	if(rollSetPoint > maxRoll) rollSetPoint = maxRoll;
-	else if(rollSetPoint < -maxRoll) rollSetPoint = -maxRoll;
+	if (rollSetPoint > maxRoll) rollSetPoint = maxRoll;
+	else if (rollSetPoint < -maxRoll) rollSetPoint = -maxRoll;
 
 	derivHdgError = error;
 }
@@ -575,19 +606,26 @@ void SimAP::setRollSetPoint() {
 //------------------------------------------------------------------------------
 // RUDDER control for flight toward destination heading
 //------------------------------------------------------------------------------
+
 double SimAP::getRudder() {
-	Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
-	if(uav == 0) return 0;
-	
+	if (uav == nullptr) {
+		uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
+		if (uav == nullptr) return 0;
+	}
+
 	// Do we have valid NAV steering data?
-	const Eaagles::Simulation::Navigation* nav = uav->getNavigation();
-	if(nav == 0 || !nav->isNavSteeringValid()) return 0;
-	double setPoint = nav->getTrueBrgDeg();
-	double processValue = uav->getHeadingD();
-	double error = setPoint - processValue;
-	if(error < -180) error += 360;
-	
-	if(error > 5 || error < -5) {
+	if (nav == nullptr) {
+		nav = uav->getNavigation();
+		if (nav == nullptr || !nav->isNavSteeringValid()) return 0;
+	}
+
+	double setPoint = nav->getTrueBrgDeg();	  // desired hdg
+	double processValue = uav->getHeadingD(); // current hdg
+	double error = setPoint - processValue;	  // diff
+
+	if (error < -180) error += 360;
+
+	if (error > 5 || error < -5) {
 		integYawError = 0;
 		return 0;
 	}
@@ -601,30 +639,67 @@ double SimAP::getRudder() {
 }
 
 //------------------------------------------------------------------------------
-// UAV autopilot control
+// UAV autopilot control - used by OCA for Dynamic Waypoint Following (DWF)
 //------------------------------------------------------------------------------
-void SimAP::flyUav() {
-	if(mode == 0) return; // allow manual flight
-	
-	Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship()); // get UAV
+
+void SimAP::setWaypoint(const osg::Vec3& pos, const LCreal altM) {
+	// do nothing if NOT in swarming mode (i.e. Dynamic Waypoint Following not applicable)
+	if (strcmp(*mode, "swarm") != 0) return;
+
+	if (wp == nullptr) { // add waypoint if not present
+		if (route == nullptr) { // add route if not present
+			if (nav == nullptr) { // add navigation system if not present
+				if (uav == nullptr) { // add uav if not present
+					uav = dynamic_cast<Swarms::UAV*>(getOwnship());
+					if (uav == nullptr) return; // do nothing if ownship is not a UAV
+				}
+				nav = uav->getNavigation();
+				if (nav == nullptr) { // add new instance since UAV does not already have a nav system
+					nav = new Simulation::Navigation();
+					Basic::Pair* navPair = new Basic::Pair("Navigation", nav);
+					uav->addComponent(navPair);
+				}
+			}
+			route = nav->getPriRoute();
+			if (route == nullptr) { // add new instance since nav system does not already have a primary route
+				route = new Simulation::Route();
+				nav->setRoute(route);
+			}
+		}
+		wp = new Simulation::Steerpoint();
+		route->insertSteerpoint(wp);
+	}
+	// set Dynamic Waypoint (DW)
+	wp->setPosition(pos);     // Lat/Lon
+	wp->setCmdAltitude(altM); // Alt
+	route->directTo(wp);      // Fly to DW
+}
+
+//------------------------------------------------------------------------------
+// Autopilot updates are not Time-Critical because control inputs are not
+// Time-Critical, i.e. UAV can fly with slightly delayed control inputs
+//------------------------------------------------------------------------------
+
+void SimAP::updateData(const LCreal dt) {
+	if (mode == 0) return; // allow manual flight
+
+	uav = dynamic_cast<Swarms::UAV*>(getOwnship()); // get UAV
 	if (uav == 0) return;
-	
-	Eaagles::Dynamics::JSBSimModel* dm = dynamic_cast<Eaagles::Dynamics::JSBSimModel*>(uav->getDynamicsModel()); // get UAV's dynamics model
-	if (dm == 0) return;
-	
+
+	if (fdm == nullptr) {
+		fdm = dynamic_cast<Eaagles::Dynamics::JSBSimModel*>(uav->getDynamicsModel()); // get UAV's flight dynamics model
+		if (fdm == nullptr) return;
+	}
+
 	// set pitch and roll set points based on commanded altitude and bearing
 	setPitchSetPoint();
 	setRollSetPoint();
 
 	// provide control inputs
-	dm->setControlStickPitchInput(  getFwdStick() );
-	dm->setControlStickRollInput( getSideStick() );
-	dm->setRudderPedalInput( getRudder() );
-}
+	fdm->setControlStickPitchInput(getFwdStick());
+	fdm->setControlStickRollInput(getSideStick());
+	fdm->setRudderPedalInput(getRudder());
 
-void SimAP::updateData(const LCreal dt)
-{
-	flyUav();
 	BaseClass::updateData(dt);
 }
 

@@ -1,29 +1,12 @@
 #include "OnboardControlAgent.h"
 #include "UAV.h"
-#include "SwarmAP.h"
+#include "SimAP.h"
 
 #include "openeaagles/basic/Number.h"
 #include "openeaagles/simulation/Player.h"
-#include "openeaagles/simulation/Navigation.h"
-#include "openeaagles/simulation/Steerpoint.h"
-#include "openeaagles/simulation/Route.h"
 #include "openeaagles/simulation/Simulation.h"
 #include "openeaagles/basic/Pair.h"
 #include "openeaagles/basic/PairStream.h"
-
-#include "openeaagles/basic/EarthModel.h"
-#include "openeaagles/basic/osg/Vec3"
-#include "openeaagles/basic/osg/Vec4"
-#include "openeaagles/basic/osg/Matrix"
-#include "openeaagles/basic/units/Angles.h"
-#include "openeaagles/basic/units/Distances.h"
-
-#include "math.h"
-
-// used for testing
-#include <iostream>
-#include "conio.h" // _getch() used for pausing execution
-#include <iomanip>
 
 namespace Eaagles {
 namespace Swarms {
@@ -43,9 +26,9 @@ BEGIN_SLOTTABLE(OnboardControlAgent)
 END_SLOTTABLE(OnboardControlAgent)
 
 BEGIN_SLOT_MAP(OnboardControlAgent)
-	ON_SLOT( 1, setSlotSeparationFactor,  Basic::Number)
-	ON_SLOT( 2, setSlotAlignmentFactor,   Basic::Number)
-	ON_SLOT( 3, setSlotCohesionFactor,    Basic::Number)
+	ON_SLOT( 1, setSlotSeparationFactor,  Basic::Number)   // Default = 0.5
+	ON_SLOT( 2, setSlotAlignmentFactor,   Basic::Number)   // Default = 10
+	ON_SLOT( 3, setSlotCohesionFactor,    Basic::Number)   // Default = 1
 	ON_SLOT( 4, setSlotCommDistance,      Basic::Distance) // Distance in nautical miles, default = 15 NM
 	ON_SLOT( 4, setSlotCommDistance,      Basic::Number)   // Distance in meters
 	ON_SLOT( 5, setSlotDesiredSeparation, Basic::Distance) // Distance in nautical miles
@@ -66,12 +49,11 @@ OnboardControlAgent::OnboardControlAgent()
 {
 	STANDARD_CONSTRUCTOR()
 
-	sFactor    = 1.0;
-	aFactor    = 1.0;
+	sFactor    = 0.5;
+	aFactor    = 10.0;
 	cFactor    = 1.0;
 	commDist   = 27780; // measured in meters (15 Nautical Miles)
 	desiredSep = 1000;  // in meters
-	wp = 0;
 }
 
 //------------------------------------------------------------------------------------
@@ -86,27 +68,13 @@ void OnboardControlAgent::copyData(const OnboardControlAgent& org, const bool)
 	cFactor    = org.cFactor;
 	commDist   = org.commDist;
 	desiredSep = org.desiredSep;
-	wp = 0;
 }
 
 //------------------------------------------------------------------------------------
 // deleteData() -- delete this object's data
 //------------------------------------------------------------------------------------
-void OnboardControlAgent::deleteData()
-{
-	if(wp != 0) {
-		// remove waypoint from player's navigation route (if exists)
-		Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(getOwnship());
-		Eaagles::Simulation::Navigation* nav = uav->getNavigation();
-		if(nav != 0) {
-			Eaagles::Simulation::Route* route = nav->getPriRoute();
-			if(route != 0) {
-				route->deleteSteerpoint(wp);
-			}
-		}
-		// delete waypoint
-		wp->unref();
-	}
+void OnboardControlAgent::deleteData() {
+
 }
 
 //------------------------------------------------------------------------------------
@@ -311,70 +279,52 @@ bool OnboardControlAgent::setSlotDesiredSeparation(const Basic::Distance* const 
 void OnboardControlAgent::updateData(const LCreal dt)
 {
 	Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(getOwnship());
-	const char* mode = dynamic_cast<SwarmAP*>(uav->getPilot())->getMode();
+	if (uav == 0) return;
+	Swarms::SimAP* ap = dynamic_cast<Swarms::SimAP*>(uav->getPilot());
+	if (ap == 0) return;
 
-	if( strcmp(mode, "swarm") != 0 ) return;
-
-	Simulation::Navigation* nav = uav->getNavigation();
-	if(nav == 0) {
-		nav = new Simulation::Navigation();
-		Basic::Pair* navPair = new Basic::Pair("Navigation", nav);
-		uav->addComponent(navPair);
-	}
-	Simulation::Route* route = nav->getPriRoute();
-	if(route == 0) {
-		route = new Simulation::Route();
-		nav->setRoute(route);
-	}
-	
-	// Update next waypoint based on flocking algorithm/parameters
-	if(wp == 0) {
-		wp = new Simulation::Steerpoint();
-		route->insertSteerpoint(wp);
-	}
+	// Reynolds Flocking rules:
 	Eaagles::osg::Vec3d aVec = getAlignmentVector();
 	Eaagles::osg::Vec3d sVec = getSeparationVector();
 	Eaagles::osg::Vec3d cVec = getCohesionVector();
 
-	Eaagles::osg::Vec3d nextWaypoint = aVec + sVec + cVec;
-
-	Eaagles::osg::Vec3d uavPosition = uav->getPosition();
+	Eaagles::osg::Vec3d nextWaypoint = aVec + sVec + cVec; // inertial frame (NED with UAV origin)
+	Eaagles::osg::Vec3d uavPosition  = uav->getPosition();
 
 	if(nextWaypoint.length() == 0) {
 		// set waypoint for straight ahead (same altitude)
-		wp->setPosition( uavPosition + uav->getVelocity()*5000 );
-		wp->setCmdAltitude( uav->getAltitude() );
+		ap->setWaypoint(uavPosition + uav->getVelocity() * 5000, uav->getAltitude());
 	} else {
-		wp->setPosition( uavPosition + nextWaypoint );
-		wp->setCmdAltitude( -(uavPosition + nextWaypoint).z() );
-		//================================================================================================================
-		// DRAW OCA CREATED WAYPOINT
-		Swarms::UAV* owner = dynamic_cast<Swarms::UAV*>(getOwnship());
-		Basic::PairStream* players = owner->getSimulation()->getPlayers();
-
-		int i = 1;
-		while(true) {
-			Basic::Pair* player = players->getPosition(i);
-			if(player != 0) {
-				Simulation::Player* p = dynamic_cast<Simulation::Player*>(player->object());
-				if(p->getID() == 15) {
-					p->setPosition(wp->getPosition());
-				}
-				if(p->getID() == 16) {
-					p->setPosition(uavPosition + aVec);
-				}
-				if(p->getID() == 17) {
-					p->setPosition(uavPosition + sVec);
-				}
-				if(p->getID() == 18) {
-					p->setPosition(uavPosition + cVec);
-				}
-			} else break;
-			i++;
-		}
-		//================================================================================================================
+		ap->setWaypoint(uavPosition + nextWaypoint, -(uavPosition + nextWaypoint).z());
+		//========================================================================================//
+		// DRAW OCA CREATED WAYPOINT															  //
+		//========================================================================================//
+		Swarms::UAV* owner = dynamic_cast<Swarms::UAV*>(getOwnship());							  //
+		Basic::PairStream* players = owner->getSimulation()->getPlayers();						  //
+																								  //
+		int i = 1;																				  //
+		while(true) {																			  //
+			Basic::Pair* player = players->getPosition(i);										  //
+			if(player != 0) {																	  //
+				Simulation::Player* p = dynamic_cast<Simulation::Player*>(player->object());	  //
+				if(p->getID() == 14) { // vect_A												  //
+					p->setPosition(uavPosition + aVec);											  //
+				}																				  //
+				if(p->getID() == 15) { // vect_S												  //
+					p->setPosition(uavPosition + sVec);											  //
+				}																				  //
+				if(p->getID() == 16) { // vect_C												  //
+					p->setPosition(uavPosition + cVec);											  //
+				}																				  //
+				if(p->getID() == 17) { // vect_X												  //
+					p->setPosition(uavPosition + nextWaypoint); 								  //
+				}																				  //
+			} else break;																		  //
+			i++;																				  //
+		}																						  //
+		//========================================================================================//
 	}
-	route->directTo(wp);
+	
 	BaseClass::updateData(dt);
 }
 

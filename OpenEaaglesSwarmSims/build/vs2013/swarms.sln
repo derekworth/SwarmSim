@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "swarmDemo", "swarmDemo.vcxproj", "{2D74CC6A-F371-4B00-9581-5473D4175BF0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "reynoldsVectorDemo", "reynoldsVectorDemo.vcxproj", "{C4746F3B-B041-CA46-D95A-B8EEC586FFD4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pixhawkComm", "pixhawkComm.vcxproj", "{E8602395-22E5-4862-9914-9B3E9D4AC8EB}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pixhawkHIL", "pixhawkHIL.vcxproj", "{285EE59C-5714-4ED2-8388-D1A5905BEF0F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pixhawkComm", "pixhawkComm.vcxproj", "{E8602395-22E5-4862-9914-9B3E9D4AC8EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +25,14 @@ Global
 		{C4746F3B-B041-CA46-D95A-B8EEC586FFD4}.Debug|Win32.Build.0 = Debug|Win32
 		{C4746F3B-B041-CA46-D95A-B8EEC586FFD4}.Release|Win32.ActiveCfg = Release|Win32
 		{C4746F3B-B041-CA46-D95A-B8EEC586FFD4}.Release|Win32.Build.0 = Release|Win32
-		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Debug|Win32.ActiveCfg = Debug|Win32
-		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Debug|Win32.Build.0 = Debug|Win32
-		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Release|Win32.ActiveCfg = Release|Win32
-		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Release|Win32.Build.0 = Release|Win32
 		{285EE59C-5714-4ED2-8388-D1A5905BEF0F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{285EE59C-5714-4ED2-8388-D1A5905BEF0F}.Debug|Win32.Build.0 = Debug|Win32
 		{285EE59C-5714-4ED2-8388-D1A5905BEF0F}.Release|Win32.ActiveCfg = Release|Win32
 		{285EE59C-5714-4ED2-8388-D1A5905BEF0F}.Release|Win32.Build.0 = Release|Win32
+		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Debug|Win32.Build.0 = Debug|Win32
+		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Release|Win32.ActiveCfg = Release|Win32
+		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

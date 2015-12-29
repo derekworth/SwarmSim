@@ -1,7 +1,7 @@
 //#include "UAV.h"
 
 #include "Factory.h"
-#include "SwarmAP.h"
+#include "SimAP.h"
 #include "UAV.h"
 
 #include "openeaagles/basic/Parser.h"
@@ -43,7 +43,7 @@ namespace Eaagles {
 		const char* configFile = "swarm.edl";
 
 		// Background frame rate (Hz)
-		const int bgRate = 50;
+		const int bgRate = 60;
 
 		// System descriptions
 		static Simulation::Station* station = 0;
@@ -116,11 +116,15 @@ namespace Eaagles {
 
 			// prints the mode of each UAV
 			int i = 1;
-			while(true) {
-				Eaagles::Swarms::UAV* uav = dynamic_cast<Eaagles::Swarms::UAV *>(station->getPlayers()->getPosition(i)->object());
-				if(uav == 0) break;
-				Eaagles::Swarms::SwarmAP* sap = dynamic_cast<Eaagles::Swarms::SwarmAP *>(uav->getPilot());
-				cout << "Player(" << i++ << ") Mode: " << sap->getMode() << endl;
+			while (true) {
+				Eaagles::Basic::Pair* pair = station->getPlayers()->getPosition(i);
+				if (pair == nullptr) break;
+				Eaagles::Swarms::UAV* uav = dynamic_cast<Eaagles::Swarms::UAV*>(pair->object());
+				if (uav != nullptr) {
+					Eaagles::Swarms::SimAP* ap = dynamic_cast<Eaagles::Swarms::SimAP *>(uav->getPilot());
+					cout << "Player(" << i << ") Mode: " << ap->getMode() << endl;
+				}
+				i++;
 			}
 
 			cout << "Simulation running..." << endl;

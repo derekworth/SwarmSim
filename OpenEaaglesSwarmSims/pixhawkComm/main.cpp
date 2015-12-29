@@ -4,437 +4,509 @@
 //#define  __Eaagles_Swarms_PixhawkAP_H__
 //#endif // ! __Eaagles_Swarms_PixhawkAP_H__
 
+#define PI 3.1415926535897932384626433832795
+
 #include <iostream> // used for std::cout
 #include <fstream>  // used to write to file
+#include <string>
 #include "conio.h"  // used for _getch();
 #include <stdint.h> // used for int8_t, int16_t, etc.
 #include <windows.h>
-#include <thread>
 #include "Serial.h"  // used for serial port communication
 
-#include "coremag.hxx"
-
-#include <chrono>
-
-#include "mavlink\checksum.h"
 #include "mavlink\mavlink_types.h"
 #include "mavlink\common\mavlink.h"
 #include "mavlink\pixhawk\mavlink.h"
-//#include "mavlink\common\mavlink_msg_hil_controls.h"
-//#include "mavlink\common\mavlink_msg_hil_state_quaternion.h"
-
-#ifndef PI
-#define PI 3.14159265358979323846
-#endif
-
-typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> time_pt;
-typedef std::chrono::duration<std::chrono::system_clock::rep, std::chrono::system_clock::period> time_dur;
 
 using namespace std;
 
-bool receiving, sending, sendOnce;
-HANDLE rtHandle, stHandle;
-CSerial serial;
-ofstream outputfile;
-int packetsWritten = 0;
-mavlink_message_t* message = new mavlink_message_t;
-mavlink_status_t* status = new mavlink_status_t;
-chrono::system_clock::time_point start_time = std::chrono::high_resolution_clock::now();
-uint64_t boot_time = 0;
-uint8_t mavlink_crcs[] = MAVLINK_MESSAGE_CRCS;
-int sendType = -1;
-uint32_t pingSeq = 0;
-
-uint64_t timeSinceBoot() {
-	time_dur duration = std::chrono::high_resolution_clock::now() - start_time;
-	return chrono::duration_cast<std::chrono::microseconds>(duration).count() + boot_time * 1000;
-}
-
-void printMessage(mavlink_message_t* msg, bool saveToFileAsWell, bool includePayload) {
-	if (msg->magic == 254) {
-		//cout << dec << (int)msg->magic << " " << (int)msg->len << " " << (int)msg->seq << " " << (int)msg->sysid << " " << (int)msg->compid << " " << (int)msg->msgid << " " << (int)msg->checksum;
-		if (saveToFileAsWell) {
-			outputfile << dec << (int)msg->magic << "\t" << (int)msg->len << "\t" << (int)msg->seq << "\t" << (int)msg->sysid << "\t" << (int)msg->compid << "\t" << (int)msg->msgid << "\t" << (int)msg->checksum;
-		}
-		if (includePayload) {
-			int index = 0;
-			for (int i = 0; i < sizeof(msg->payload64) && i < (msg->len / 8) + 1; i++) {
-				uint8_t bytes[8];
-				bytes[0] = (msg->payload64[i] & 0x00000000000000FF) >> 0;
-				bytes[1] = (msg->payload64[i] & 0x000000000000FF00) >> 8;
-				bytes[2] = (msg->payload64[i] & 0x0000000000FF0000) >> 16;
-				bytes[3] = (msg->payload64[i] & 0x00000000FF000000) >> 24;
-				bytes[4] = (msg->payload64[i] & 0x000000FF00000000) >> 32;
-				bytes[5] = (msg->payload64[i] & 0x0000FF0000000000) >> 40;
-				bytes[6] = (msg->payload64[i] & 0x00FF000000000000) >> 48;
-				bytes[7] = (msg->payload64[i] & 0xFF00000000000000) >> 56;
-				for (int j = 0; j < sizeof(bytes); j++) {
-					if (index < msg->len) {
-						if (msg->msgid == MAVLINK_MSG_ID_STATUSTEXT) {
-							cout << " " << (char)bytes[j];
-						}
-						
-						if (saveToFileAsWell) {
-							outputfile << hex << "\t" << (int)bytes[j];
-						}
-						index++;
-					}
-				}
-			}
-		}
-		if (msg->msgid == MAVLINK_MSG_ID_STATUSTEXT) {
-			cout << endl;
-		}
-		if (saveToFileAsWell) {
-			outputfile << endl;
-			packetsWritten++;
-		}
-		
-	}
-}
-
-bool openSerialPort(int portNum) {
-	if (!serial.Open(portNum, 9600)) {
-		cout << "Failed to open port (" << portNum << ") :(" << endl;
+uint8_t isAsciiHex(char letter) {
+	if ((letter >= '0' && letter <= '9') ||
+		(letter >= 'a' && letter <= 'f') ||
+		(letter >= 'A' && letter <= 'F')) {
+		return true;
+	} else {
 		return false;
 	}
-	return true;
 }
 
-DWORD WINAPI rcvThread(LPVOID lpParameter) {
-	int bufferSize = 5;
-	char* lpBuffer = new char[bufferSize];
+uint8_t convertAsciiToHex(char letter) {
+	uint8_t hex = 0;
+	if (letter >= '0' && letter <= '9') {
+		hex = letter - 48;
+	} else if (letter >= 'a' && letter <= 'f') {
+		hex = letter - 87;
+	} else if (letter >= 'A' && letter <= 'F') {
+		hex = letter - 55;
+	} else {
+		return 0;
+	}
+	return hex;
+}
 
-	// continuously receive serial data
-	cout << "Currently receving data from PX4..." << endl;
-	while (receiving) {
-		if (serial.ReadDataWaiting() > bufferSize) {
-			serial.ReadData(lpBuffer, bufferSize);
-			for (int i = 0; i < bufferSize; i++) {
-				if (mavlink_parse_char(1, lpBuffer[i], message, status)) {
-					printMessage(message, true, true);
-					// TODO: look for HIL related messages and handle them appropriately
-					// -- Specifically, look for HIL_CONTROLS (91) message to send to JSBSim
-					if (message->msgid == 2) {
-						if (boot_time == 0) {
-							start_time = std::chrono::high_resolution_clock::now();
-							boot_time = message->payload64[1] & 0xFFFFFFFF;
-							cout << dec << "Boot time: " << boot_time << " ms" << endl;
-						}
-					}
-				}
+void preprocessFile(char* filename) {
+	char str[160];
+	strcpy(str, "C:\\Users\\Derek\\Desktop\\HIL Experimentation\\serialcaptures\\");
+	strcat(str, filename);
+
+	string line;
+	bool success = true;
+
+	// "read from" file
+	ifstream input(str);
+
+	// "append to" file
+	ofstream output;
+	output.open("C:\\Users\\Derek\\Desktop\\HIL Experimentation\\serialcaptures\\hex_output.txt", ios::trunc);
+
+	if (output.is_open()) {
+		if (input.is_open()) {
+			while (getline(input, line)) {
+				if (line.find("    ") == 0)
+					output << line.substr(4, 47) << "\n";
+				else if (line.find("Read data") < 100)
+					output << "R\n";
+				else if (line.find("Written data") < 100)
+					output << "W\n";
+			}
+			input.close();
+		} else {
+			std::cout << "Unable to open input file.";
+			success = false;
+		}
+		output.close();
+	} else {
+		std::cout << "Unable to open output files.";
+		success = false;
+	}
+	if (success) std::cout << "Preprocessing complete." << endl;
+}
+
+void processFile() {
+	char b;
+	//cout.setf(ios::hex, ios::basefield);
+
+	mavlink_message_t* msg;
+	mavlink_message_t rMsg;
+	mavlink_message_t wMsg;
+	mavlink_status_t rStat;
+	mavlink_status_t wStat;
+
+	char param_id[17];
+	float controls[8];
+	uint8_t fcv[8], mcv[8], ocv[8];
+	char text[51];
+
+	// "read from" file
+	ifstream input("C:\\Users\\Derek\\Desktop\\HIL Experimentation\\serialcaptures\\hex_output.txt");
+
+	// "append to" files
+	ofstream output;
+	output.open("C:\\Users\\Derek\\Desktop\\HIL Experimentation\\serialcaptures\\mavlink_output.txt", ios::trunc);
+
+	bool isWriting = false;
+	bool isReading = false;
+	bool msgComplete = false;
+
+	// Process Send data
+	int i = 0;
+	bool first = true;
+	uint8_t hexValue = 0;
+	bool hexValid = false;
+	//while (input >> hex >> b) {
+
+	while (input.get(b)) {
+
+		if (isAsciiHex(b)) {
+			if (first) {
+				hexValue = convertAsciiToHex(b) << 4;
+				first = false;
+				hexValid = false;
+			} else {
+				hexValue = convertAsciiToHex(b) | hexValue;
+				first = true;
+				hexValid = true;
+			}
+		} else {
+			hexValue = 0;
+			first = true;
+			hexValid = false;
+			if (b == 'W') {
+				isWriting = true;
+				isReading = false;
+			} else if (b == 'R') {
+				isWriting = false;
+				isReading = true;
 			}
 		}
-		else {
-			std::this_thread::yield();
+
+		if (hexValid && isWriting && !isReading) {
+			msgComplete = mavlink_parse_char(1, hexValue, &wMsg, &wStat);
+			msg = &wMsg;
+		} else if (hexValid && isReading && !isWriting) {
+			msgComplete = mavlink_parse_char(2, hexValue, &rMsg, &rStat);
+			msg = &rMsg;
 		}
-	}
 
-	delete[] lpBuffer;
+		if (msgComplete) {
+			msgComplete = false;
+			std::cout << ".";
+			// ===== SAVE TO FILE ===========================
+			output << dec << (int)msg->magic << "\t" << (int)msg->len << "\t" << (int)msg->seq << "\t" << (int)msg->sysid << "\t" << (int)msg->compid << "\t" << (int)msg->msgid << "\t" << (int)msg->checksum << "\t";
 
-	return 0;
-}
-
-DWORD WINAPI sndThread(LPVOID lpParameter) {
-
-	mavlink_message_t* msg = new mavlink_message_t;
-	float attitude_quaternion[4] = {1,0,0,0};
-
-	while (sending) {
-		if (sendOnce) {
-			switch (sendType) {
-			case 4:    // PING
-				mavlink_msg_ping_pack(1, 1, msg, timeSinceBoot(), pingSeq++, 0, 0);
+			switch (msg->msgid) {
+			case MAVLINK_MSG_ID_HEARTBEAT:
+				output << "type: " << (int)mavlink_msg_heartbeat_get_type(msg) <<
+					" | autopilot: " << (int)mavlink_msg_heartbeat_get_autopilot(msg) <<
+					" | base_mode: " << (int)mavlink_msg_heartbeat_get_base_mode(msg) <<
+					" | custom_mode: " << (int)mavlink_msg_heartbeat_get_custom_mode(msg) <<
+					" | system_status: " << (int)mavlink_msg_heartbeat_get_system_status(msg) <<
+					" | mavlink_version: " << (int)mavlink_msg_heartbeat_get_mavlink_version(msg);
 				break;
-			case 11:   // SET_MODE
-				mavlink_msg_set_mode_pack(1, 1, msg, 1,
-					MAV_MODE_FLAG_HIL_ENABLED,
-					0);
+			case MAVLINK_MSG_ID_SET_MODE:
+				output << "target_system: " << (int)mavlink_msg_set_mode_get_target_system(msg) <<
+					" | base_mode: " << (int)mavlink_msg_set_mode_get_base_mode(msg) <<
+					" | custom_mode: " << (int)mavlink_msg_set_mode_get_custom_mode(msg);
 				break;
-			case 12:   // SET_MODE
-				mavlink_msg_set_mode_pack(1, 1, msg, 1,
-					MAV_MODE_FLAG_STABILIZE_ENABLED,
-					0);
+			case MAVLINK_MSG_ID_PARAM_REQUEST_READ:
+				mavlink_msg_param_request_read_get_param_id(msg, param_id);
+				output << "target_system: " << (int)mavlink_msg_param_request_read_get_target_system(msg) <<
+					" | target_component: " << (int)mavlink_msg_param_request_read_get_target_component(msg) <<
+					" | param_id: " << param_id <<
+					" | param_index: " << (int)mavlink_msg_param_request_read_get_param_index(msg);
 				break;
-			case 13:   // SET_MODE
-				mavlink_msg_set_mode_pack(1, 1, msg, 1,
-					MAV_MODE_FLAG_GUIDED_ENABLED,
-					0);
+			case MAVLINK_MSG_ID_PARAM_REQUEST_LIST:
+				output << "target_system: " << (int)mavlink_msg_param_request_list_get_target_system(msg) <<
+					" | target_component: " << (int)mavlink_msg_param_request_list_get_target_component(msg);
 				break;
-			case 14:   // SET_MODE
-				mavlink_msg_set_mode_pack(1, 1, msg, 1,
-					MAV_MODE_FLAG_AUTO_ENABLED,
-					0);
+			case MAVLINK_MSG_ID_PARAM_VALUE:
+				mavlink_msg_param_value_get_param_id(msg, param_id);
+				param_id[16] = '\0';
+				output << "param_id: " << param_id <<
+					" | param_value: " << mavlink_msg_param_value_get_param_value(msg) <<
+					" | param_type: " << (int)mavlink_msg_param_value_get_param_type(msg) <<
+					" | param_count: " << (int)mavlink_msg_param_value_get_param_count(msg) <<
+					" | param_index: " << (int)mavlink_msg_param_value_get_param_index(msg);
 				break;
-			case 21:   // PARAM_REQUEST_LIST
-				mavlink_msg_param_request_list_pack(1, 1, msg, 1, 1);
+			case MAVLINK_MSG_ID_GPS_RAW_INT:
+				output << "time_usec: " << mavlink_msg_gps_raw_int_get_time_usec(msg) <<
+					" | fix_type: " << (int)mavlink_msg_gps_raw_int_get_fix_type(msg) <<
+					" | lat: " << (int)mavlink_msg_gps_raw_int_get_lat(msg) <<
+					" | lon: " << (int)mavlink_msg_gps_raw_int_get_lon(msg) <<
+					" | alt: " << (int)mavlink_msg_gps_raw_int_get_alt(msg) <<
+					" | eph: " << (int)mavlink_msg_gps_raw_int_get_eph(msg) <<
+					" | epv: " << (int)mavlink_msg_gps_raw_int_get_epv(msg) <<
+					" | vel: " << (int)mavlink_msg_gps_raw_int_get_vel(msg) <<
+					" | cog: " << (int)mavlink_msg_gps_raw_int_get_cog(msg) <<
+					" | satellites_visible: " << (int)mavlink_msg_gps_raw_int_get_satellites_visible(msg);
 				break;
-			case 39:
-				mavlink_msg_mission_item_pack(254, 1, msg, 1, 1, 0, MAV_FRAME_MISSION, 300, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+			case MAVLINK_MSG_ID_ATTITUDE:
+				output << "time_boot_ms: " << (int)mavlink_msg_attitude_get_time_boot_ms(msg) <<
+					" | roll: " << mavlink_msg_attitude_get_roll(msg) <<
+					" | pitch: " << mavlink_msg_attitude_get_pitch(msg) <<
+					" | yaw: " << mavlink_msg_attitude_get_yaw(msg) <<
+					" | rollspeed: " << mavlink_msg_attitude_get_rollspeed(msg) <<
+					" | pitchspeed: " << mavlink_msg_attitude_get_pitchspeed(msg) <<
+					" | yawspeed: " << mavlink_msg_attitude_get_yawspeed(msg);
 				break;
-			case 43:
-				mavlink_msg_mission_request_list_pack(254, 1, msg, 1, 1);
-			case 76:
-				mavlink_msg_command_long_pack(254, 1, msg, 1, 1, 22, 0, 5, 0, 0, 0, 37, 117, 500);
-			case 115:  // HIL_STATE_QUATERNION
-				// TODO: get sim state data from JSBSim and pack into this msg
-				mavlink_msg_hil_state_quaternion_pack(1, 1, msg, timeSinceBoot(), attitude_quaternion, 0.001, 0.000, 0.000, 0x98ab02f4, 0x43e3eba4, 0x0000f42c, 0x0036, 0x0045, 0x0000, 0x03f5, 0x0390, 0x000f, 0x000c, 0x0002);
+			case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+				output << "time_boot_ms: " << (int)mavlink_msg_local_position_ned_get_time_boot_ms(msg) <<
+					" | x: " << mavlink_msg_local_position_ned_get_x(msg) <<
+					" | y: " << mavlink_msg_local_position_ned_get_y(msg) <<
+					" | z: " << mavlink_msg_local_position_ned_get_z(msg) <<
+					" | vx: " << mavlink_msg_local_position_ned_get_vx(msg) <<
+					" | vy: " << mavlink_msg_local_position_ned_get_vy(msg) <<
+					" | vz: " << mavlink_msg_local_position_ned_get_vz(msg);
+				break;
+			case MAVLINK_MSG_ID_SERVO_OUTPUT_RAW:
+				output << "time_usec: " << (int)mavlink_msg_servo_output_raw_get_time_usec(msg) <<
+					" | port: " << (int)mavlink_msg_servo_output_raw_get_port(msg) <<
+					" | servo1_raw: " << (int)mavlink_msg_servo_output_raw_get_servo1_raw(msg) <<
+					" | servo2_raw: " << (int)mavlink_msg_servo_output_raw_get_servo2_raw(msg) <<
+					" | servo3_raw: " << (int)mavlink_msg_servo_output_raw_get_servo3_raw(msg) <<
+					" | servo4_raw: " << (int)mavlink_msg_servo_output_raw_get_servo4_raw(msg) <<
+					" | servo5_raw: " << (int)mavlink_msg_servo_output_raw_get_servo5_raw(msg) <<
+					" | servo6_raw: " << (int)mavlink_msg_servo_output_raw_get_servo6_raw(msg) <<
+					" | servo7_raw: " << (int)mavlink_msg_servo_output_raw_get_servo7_raw(msg) <<
+					" | servo8_raw: " << (int)mavlink_msg_servo_output_raw_get_servo8_raw(msg);
+				break;
+			case MAVLINK_MSG_ID_MISSION_ITEM:
+				output << "target_system: " << (int)mavlink_msg_mission_item_get_target_system(msg) <<
+					" | target_component: " << (int)mavlink_msg_mission_item_get_target_component(msg) <<
+					" | seq: " << (int)mavlink_msg_mission_item_get_seq(msg) <<
+					" | frame: " << (int)mavlink_msg_mission_item_get_frame(msg) <<
+					" | command: " << (int)mavlink_msg_mission_item_get_command(msg) <<
+					" | current: " << (int)mavlink_msg_mission_item_get_current(msg) <<
+					" | autocontinue: " << (int)mavlink_msg_mission_item_get_autocontinue(msg) <<
+					" | param1: " << mavlink_msg_mission_item_get_param1(msg) <<
+					" | param2: " << mavlink_msg_mission_item_get_param2(msg) <<
+					" | param3: " << mavlink_msg_mission_item_get_param3(msg) <<
+					" | param4: " << mavlink_msg_mission_item_get_param4(msg) <<
+					" | x: " << mavlink_msg_mission_item_get_x(msg) <<
+					" | y: " << mavlink_msg_mission_item_get_y(msg) <<
+					" | z: " << mavlink_msg_mission_item_get_z(msg);
+				break;
+			case MAVLINK_MSG_ID_MISSION_REQUEST:
+				output << "target_system: " << (int)mavlink_msg_mission_request_get_target_system(msg) <<
+					" | target_component: " << (int)mavlink_msg_mission_request_get_target_component(msg) <<
+					" | seq: " << (int)mavlink_msg_mission_request_get_seq(msg);
+				break;
+			case MAVLINK_MSG_ID_MISSION_CURRENT:
+				output << "seq: " << (int)mavlink_msg_mission_current_get_seq(msg);
+				break;
+			case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
+				output << "target_system: " << (int)mavlink_msg_mission_request_list_get_target_system(msg) <<
+					" | target_component: " << (int)mavlink_msg_mission_request_list_get_target_component(msg);
+				break;
+			case MAVLINK_MSG_ID_MISSION_COUNT:
+				output << "target_system: " << (int)mavlink_msg_mission_count_get_target_system(msg) <<
+					" | target_component: " << (int)mavlink_msg_mission_count_get_target_component(msg) <<
+					" | count: " << (int)mavlink_msg_mission_count_get_count(msg);
+				break;
+			case MAVLINK_MSG_ID_MISSION_ACK:
+				output << "target_system: " << (int)mavlink_msg_mission_ack_get_target_system(msg) <<
+					" | target_component: " << (int)mavlink_msg_mission_ack_get_target_component(msg) <<
+					" | type: " << (int)mavlink_msg_mission_ack_get_type(msg);
+				break;
+			case MAVLINK_MSG_ID_VFR_HUD:
+				output << "airspeed: " << mavlink_msg_vfr_hud_get_airspeed(msg) <<
+					" | groundspeed: " << mavlink_msg_vfr_hud_get_groundspeed(msg) <<
+					" | heading: " << (int)mavlink_msg_vfr_hud_get_heading(msg) <<
+					" | throttle: " << (int)mavlink_msg_vfr_hud_get_throttle(msg) <<
+					" | alt: " << mavlink_msg_vfr_hud_get_alt(msg) <<
+					" | climb: " << mavlink_msg_vfr_hud_get_climb(msg);
+				break;
+			case MAVLINK_MSG_ID_COMMAND_LONG:
+				output << "target_system: " << (int)mavlink_msg_command_long_get_target_system(msg) <<
+					" | target_component: " << (int)mavlink_msg_command_long_get_target_component(msg) <<
+					" | command: " << (int)mavlink_msg_command_long_get_command(msg) <<
+					" | confirmation: " << (int)mavlink_msg_command_long_get_confirmation(msg) <<
+					" | param1: " << mavlink_msg_command_long_get_param1(msg) <<
+					" | param2: " << mavlink_msg_command_long_get_param2(msg) <<
+					" | param3: " << mavlink_msg_command_long_get_param3(msg) <<
+					" | param4: " << mavlink_msg_command_long_get_param4(msg) <<
+					" | param5: " << mavlink_msg_command_long_get_param5(msg) <<
+					" | param6: " << mavlink_msg_command_long_get_param6(msg) <<
+					" | param7: " << mavlink_msg_command_long_get_param7(msg);
+				break;
+			case MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT:
+				output << "time_boot_ms: " << (int)mavlink_msg_position_target_global_int_get_time_boot_ms(msg) <<
+					" | coordinate_frame: " << (int)mavlink_msg_position_target_global_int_get_coordinate_frame(msg) <<
+					" | type_mask: " << (int)mavlink_msg_position_target_global_int_get_type_mask(msg) <<
+					" | lat_int: " << (int)mavlink_msg_position_target_global_int_get_lat_int(msg) <<
+					" | lon_int: " << (int)mavlink_msg_position_target_global_int_get_lon_int(msg) <<
+					" | alt: " << mavlink_msg_position_target_global_int_get_alt(msg) <<
+					" | vx: " << mavlink_msg_position_target_global_int_get_vx(msg) <<
+					" | vy: " << mavlink_msg_position_target_global_int_get_vy(msg) <<
+					" | vz: " << mavlink_msg_position_target_global_int_get_vz(msg) <<
+					" | afx: " << mavlink_msg_position_target_global_int_get_afx(msg) <<
+					" | afy: " << mavlink_msg_position_target_global_int_get_afy(msg) <<
+					" | afz: " << mavlink_msg_position_target_global_int_get_afz(msg) <<
+					" | yaw: " << mavlink_msg_position_target_global_int_get_yaw(msg) <<
+					" | yaw_rate: " << mavlink_msg_position_target_global_int_get_yaw_rate(msg);
+				break;
+			case MAVLINK_MSG_ID_HIL_CONTROLS:
+				output << "time_usec: " << mavlink_msg_hil_controls_get_time_usec(msg) <<
+					" | roll_ailerons: " << mavlink_msg_hil_controls_get_roll_ailerons(msg) <<
+					" | pitch_elevator: " << mavlink_msg_hil_controls_get_pitch_elevator(msg) <<
+					" | yaw_rudder: " << mavlink_msg_hil_controls_get_yaw_rudder(msg) <<
+					" | throttle: " << mavlink_msg_hil_controls_get_throttle(msg) <<
+					" | aux1: " << mavlink_msg_hil_controls_get_aux1(msg) <<
+					" | aux2: " << mavlink_msg_hil_controls_get_aux2(msg) <<
+					" | aux3: " << mavlink_msg_hil_controls_get_aux3(msg) <<
+					" | aux4: " << mavlink_msg_hil_controls_get_aux4(msg) <<
+					" | mode: " << (int)mavlink_msg_hil_controls_get_mode(msg) <<
+					" | nav_mode: " << (int)mavlink_msg_hil_controls_get_nav_mode(msg);
+				break;
+			case MAVLINK_MSG_ID_HIGHRES_IMU:
+				output << "time_usec: " << mavlink_msg_highres_imu_get_time_usec(msg) <<
+					" | xacc: " << mavlink_msg_highres_imu_get_xacc(msg) <<
+					" | yacc: " << mavlink_msg_highres_imu_get_yacc(msg) <<
+					" | zacc: " << mavlink_msg_highres_imu_get_zacc(msg) <<
+					" | xgyro: " << mavlink_msg_highres_imu_get_xgyro(msg) <<
+					" | ygyro: " << mavlink_msg_highres_imu_get_ygyro(msg) <<
+					" | zgyro: " << mavlink_msg_highres_imu_get_zgyro(msg) <<
+					" | xmag: " << mavlink_msg_highres_imu_get_xmag(msg) <<
+					" | ymag: " << mavlink_msg_highres_imu_get_ymag(msg) <<
+					" | zmag: " << mavlink_msg_highres_imu_get_zmag(msg) <<
+					" | abs_pressure: " << mavlink_msg_highres_imu_get_abs_pressure(msg) <<
+					" | diff_pressure: " << mavlink_msg_highres_imu_get_diff_pressure(msg) <<
+					" | pressure_alt: " << mavlink_msg_highres_imu_get_pressure_alt(msg) <<
+					" | temperature: " << mavlink_msg_highres_imu_get_temperature(msg) <<
+					" | fields_updated: " << (int)mavlink_msg_highres_imu_get_fields_updated(msg);
+				break;
+			case MAVLINK_MSG_ID_HIL_SENSOR:
+				output << "time_usec: " << mavlink_msg_hil_sensor_get_time_usec(msg) <<
+					" | xacc: " << mavlink_msg_hil_sensor_get_xacc(msg) <<
+					" | yacc: " << mavlink_msg_hil_sensor_get_yacc(msg) <<
+					" | zacc: " << mavlink_msg_hil_sensor_get_zacc(msg) <<
+					" | xgyro: " << mavlink_msg_hil_sensor_get_xgyro(msg) <<
+					" | ygyro: " << mavlink_msg_hil_sensor_get_ygyro(msg) <<
+					" | zgyro: " << mavlink_msg_hil_sensor_get_zgyro(msg) <<
+					" | xmag: " << mavlink_msg_hil_sensor_get_xmag(msg) <<
+					" | ymag: " << mavlink_msg_hil_sensor_get_ymag(msg) <<
+					" | zmag: " << mavlink_msg_hil_sensor_get_zmag(msg) <<
+					" | abs_pressure: " << mavlink_msg_hil_sensor_get_abs_pressure(msg) <<
+					" | diff_pressure: " << mavlink_msg_hil_sensor_get_diff_pressure(msg) <<
+					" | pressure_alt: " << mavlink_msg_hil_sensor_get_pressure_alt(msg) <<
+					" | temperature: " << mavlink_msg_hil_sensor_get_temperature(msg) <<
+					" | fields_updated: " << (int)mavlink_msg_hil_sensor_get_fields_updated(msg);
+				break;
+			case MAVLINK_MSG_ID_HIL_GPS:
+				output << "time_usec: " << mavlink_msg_hil_gps_get_time_usec(msg) <<
+					" | fix_type: " << (int)mavlink_msg_hil_gps_get_fix_type(msg) <<
+					" | lat: " << (int)mavlink_msg_hil_gps_get_lat(msg) <<
+					" | lon: " << (int)mavlink_msg_hil_gps_get_lon(msg) <<
+					" | alt: " << (int)mavlink_msg_hil_gps_get_alt(msg) <<
+					" | eph: " << (int)mavlink_msg_hil_gps_get_eph(msg) <<
+					" | epv: " << (int)mavlink_msg_hil_gps_get_epv(msg) <<
+					" | vel: " << (int)mavlink_msg_hil_gps_get_vel(msg) <<
+					" | vn: " << (int)mavlink_msg_hil_gps_get_vn(msg) <<
+					" | ve: " << (int)mavlink_msg_hil_gps_get_ve(msg) <<
+					" | vd: " << (int)mavlink_msg_hil_gps_get_vd(msg) <<
+					" | cog: " << (int)mavlink_msg_hil_gps_get_cog(msg) <<
+					" | satellites_visible: " << (int)mavlink_msg_hil_gps_get_satellites_visible(msg);
+				break;
+			case MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET:
+				mavlink_msg_actuator_control_target_get_controls(msg, controls);
+				output << "time_usec: " << mavlink_msg_actuator_control_target_get_time_usec(msg) <<
+					" | group_mlx: " << (int)mavlink_msg_actuator_control_target_get_group_mlx(msg) <<
+					" | controls: [" << controls[0]
+					<< "," << controls[1]
+					<< "," << controls[2]
+					<< "," << controls[3]
+					<< "," << controls[4]
+					<< "," << controls[5]
+					<< "," << controls[6]
+					<< "," << controls[7] << "]";
+				break;
+			case MAVLINK_MSG_ID_AUTOPILOT_VERSION:
+				mavlink_msg_autopilot_version_get_flight_custom_version(msg, fcv);
+				mavlink_msg_autopilot_version_get_middleware_custom_version(msg, mcv);
+				mavlink_msg_autopilot_version_get_os_custom_version(msg, ocv);
+				output << "capabilities: " << mavlink_msg_autopilot_version_get_capabilities(msg) <<
+					" | flight_sw_version: " << (int)mavlink_msg_autopilot_version_get_flight_sw_version(msg) <<
+					" | middleware_sw_version: " << (int)mavlink_msg_autopilot_version_get_middleware_sw_version(msg) <<
+					" | os_sw_version: " << (int)mavlink_msg_autopilot_version_get_os_sw_version(msg) <<
+					" | board_version: " << (int)mavlink_msg_autopilot_version_get_board_version(msg) <<
+					" | flight_custom_version: [" << (int)fcv[0] <<
+					"," << (int)fcv[1] <<
+					"," << (int)fcv[2] <<
+					"," << (int)fcv[3] <<
+					"," << (int)fcv[4] <<
+					"," << (int)fcv[5] <<
+					"," << (int)fcv[6] <<
+					"," << (int)fcv[7] << "]" <<
+					" | middleware_custom_version: [" << (int)mcv[0] <<
+					"," << (int)mcv[1] <<
+					"," << (int)mcv[2] <<
+					"," << (int)mcv[3] <<
+					"," << (int)mcv[4] <<
+					"," << (int)mcv[5] <<
+					"," << (int)mcv[6] <<
+					"," << (int)mcv[7] << "]" <<
+					" | os_custom_version: [" << (int)ocv[0] <<
+					"," << (int)ocv[1] <<
+					"," << (int)ocv[2] <<
+					"," << (int)ocv[3] <<
+					"," << (int)ocv[4] <<
+					"," << (int)ocv[5] <<
+					"," << (int)ocv[6] <<
+					"," << (int)ocv[7] << "]" <<
+					" | vendor_id: " << (int)mavlink_msg_autopilot_version_get_vendor_id(msg) <<
+					" | product_id: " << (int)mavlink_msg_autopilot_version_get_product_id(msg) <<
+					" | uid: " << mavlink_msg_autopilot_version_get_uid(msg);
+				break;
+			case MAVLINK_MSG_ID_STATUSTEXT:
+				mavlink_msg_statustext_get_text(msg, text);
+				output << "severity: " << (int)mavlink_msg_statustext_get_severity(msg) <<
+					" | text: " << text;
 				break;
 			default:
-				sendType = -1;
+				output << "========= NOT TRANSLATED =========";
 			}
 
-			if (sendType != -1){
-				// convert msg to buffered data
-				uint8_t buff[265];
-				int buffLen = mavlink_msg_to_send_buffer(buff, msg);
-
-				// send buffered data to PX4
-				cout << "Sent " << serial.SendData((char*)buff, buffLen) << " bytes to PX4..." << endl;
-			}
-			// reset sending parameters
-			sendOnce = false;
-			sendType = -1;
-		}
-	}
-	// MAV_MODE_FLAG_DECODE_POSITION_HIL;
-	// MAV_MODE_FLAG_HIL_ENABLED;
-
-	delete[] msg;
-
-	return 0;
-}
-
-void startSndRcvThreads() {
-	LPTHREAD_START_ROUTINE s = rcvThread;
-	if (!receiving) {
-		receiving = true;
-		rtHandle = CreateThread(0, 0, rcvThread, 0, 0, 0);
-	}
-	if (!sending) {
-		sending = true;
-		stHandle = CreateThread(0, 0, sndThread, 0, 0, 0);
-	}
-}
-
-void stopSndRcvThreads() {
-	if (receiving) {
-		receiving = false;
-		CloseHandle(rtHandle);
-	}
-	if (sending) {
-		sending = false;
-		CloseHandle(stHandle);
-	}
-}
-
-void msgTesting() {
-	// open output file
-	outputfile.open("pixhawkCommOutput.txt", ios::app);
-
-	// create a generic mavlink message
-	mavlink_message_t* msg = new mavlink_message_t;
-
-	/****************************************/
-	/*   0 | HEARTBEAT
-	/****************************************/
-	//mavlink_msg_heartbeat_pack(1, 1, msg, 11, 12, 13, 10, 14);
-
-	/****************************************/
-	/*  11 | SET_MODE
-	/****************************************/
-	//uint8_t mode = MAV_MODE_FLAG_HIL_ENABLED &
-	//			   MAV_MODE_FLAG_STABILIZE_ENABLED &
-	//			   MAV_MODE_FLAG_GUIDED_ENABLED &
-	//			   MAV_MODE_FLAG_AUTO_ENABLED;
-	//mavlink_msg_set_mode_pack(1, 1, msg, 1, mode, 0);
-
-	/****************************************/
-	/*  21 | PARAM_REQUEST_LIST
-	/****************************************/
-	//mavlink_msg_param_request_list_pack(1, 1, msg, 10, 11);
-
-	/****************************************/
-	/*  22 | PARAM_VALUE
-	/****************************************/
-	//mavlink_msg_param_value_pack(1,1,msg,"abcdefghijklmnop",2,3,4,5);
-
-	/****************************************/
-	/*  30 | ATTITUDE
-	/****************************************/
-	//mavlink_msg_attitude_pack(1, 1, msg, 1, 2, 3, 4, 5, 6, 7);
-
-	/****************************************/
-	/*  32 | LOCAL_POSITION_NED
-	/****************************************/
-	//mavlink_msg_local_position_ned_pack(1, 1, msg, 1, 2, 3, 4, 5, 6, 7);
-
-	/****************************************/
-	/*  74 | VFR_HUD
-	/****************************************/
-	//mavlink_msg_vfr_hud_pack(1, 1, msg, 1, 2, 3, 4, 5, 6);
-
-	/****************************************/
-	/*  76 | COMMAND_LONG
-	/****************************************/
-	//mavlink_msg_command_long_pack(1, 1, msg, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
-
-	/****************************************/
-	/* 105 | HIGHRES_IMU
-	/****************************************/
-	//mavlink_msg_highres_imu_pack(1, 1, msg, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-
-	/****************************************/
-	/* 115 | HIL_STATE_QUATERNION
-	/****************************************/
-	//float attitude_quaternion[4] = { 1, 0, 0, 0 };
-	//mavlink_msg_hil_state_quaternion_pack(1, 1, msg, 0, attitude_quaternion, 0x00000001, 0x00000002, 0x00000003, 0x00000004, 0x00000005, 0x00000006, 0x0007, 0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e);
-	////                                                                       0x3f800000, 0x40000000, 0x40400000
-	
-	/****************************************/
-	/*  39 | MISSION_ITEM
-	/****************************************/
-	mavlink_msg_mission_item_pack(254, 1, msg, 13, 14, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,12);
-
-
-	// convert message to bytes and print to console/file
-	uint8_t buff[265];
-	int buffLen = mavlink_msg_to_send_buffer(buff, msg);
-	for (int i = 0; i < buffLen; i++) {
-		if (mavlink_parse_char(1, buff[i], message, status)) {
-			printMessage(message, true, true);
-		}
-	}
-	delete[] msg;
-
-	outputfile.close();
-}
-
-void startCommunications() {
-	int portNum = 5;
-	int inputIndex = 0;
-	char inputs[3];
-
-	if (openSerialPort(portNum)) {
-		char input = ' ';
-		cout << "Port (" << portNum << ") open!" << endl;
-		outputfile.open("pixhawkCommOutput.txt", ios::app);
-		cout << "File open for saving packets..." << endl;
-		startSndRcvThreads();
-		while (input != 'q') { // quit
-			input = _getch();
-			if (input == 'c') {
-				cout << dec << "Packets written: " << packetsWritten << endl;
-			}
-			else if (input == 't') {
-				cout << dec << "Current time: " << timeSinceBoot() << " us" << endl;
-			}
-			else if (input == 's') {
-				inputs[0] = _getch();
-				inputs[1] = _getch();
-				inputs[2] = _getch();
-				sendType = atoi(inputs);
-				if (sendType > 0 && sendType < 256) {
-					sendOnce = true;
-				}
-			} // end of if (input == 's')
-		} // end of while (input != 'q')
-
-		stopSndRcvThreads();
-		serial.Close();
-		outputfile.close();
-	}
-	else {
-		_getch();
-	}
-}
-
-void processFiles() {
-
-	uint16_t b;
-	mavlink_message_t rcvMsg;
-	mavlink_status_t stat;
-
-	ofstream output1;
-	output1.open("C:\\Users\\Derek\\Desktop\\snd_out.txt", ios::app);
-	ifstream input1("C:\\Users\\Derek\\Desktop\\snd.txt");
-	while (input1 >> hex >> b) {
-		if (mavlink_parse_char(1, (char)b, &rcvMsg, &stat)) {
-			cout << ".";
-			// ===== SAVE TO FILE ===========================
-			output1 << dec << (int)rcvMsg.magic << "\t" << (int)rcvMsg.len << "\t" << (int)rcvMsg.seq << "\t" << (int)rcvMsg.sysid << "\t" << (int)rcvMsg.compid << "\t" << (int)rcvMsg.msgid << "\t" << (int)rcvMsg.checksum;
-			uint8_t* payload = (uint8_t *)&(rcvMsg.payload64[0]);
-			for (int i = 0; i < rcvMsg.len; i++) {
-				output1 << hex << "\t" << (int)payload[i];
-			}
-			output1 << endl;
+			output << endl;
 			// ===== END SAVE TO FILE =======================
 		}
+		//}
 	}
-	output1.close();
-	input1.close();
 
+	// close IO streams
+	output.close();
+	input.close();
 
-
-	ofstream output2;
-	output2.open("C:\\Users\\Derek\\Desktop\\rcv_out.txt", ios::app);
-	ifstream input2("C:\\Users\\Derek\\Desktop\\rcv.txt");
-	while (input2 >> hex >> b) {
-		if (mavlink_parse_char(1, (char)b, &rcvMsg, &stat)) {
-			cout << "-";
-			// ===== SAVE TO FILE ===========================
-			output2 << dec << (int)rcvMsg.magic << "\t" << (int)rcvMsg.len << "\t" << (int)rcvMsg.seq << "\t" << (int)rcvMsg.sysid << "\t" << (int)rcvMsg.compid << "\t" << (int)rcvMsg.msgid << "\t" << (int)rcvMsg.checksum;
-			uint8_t* payload = (uint8_t *)&(rcvMsg.payload64[0]);
-			for (int i = 0; i < rcvMsg.len; i++) {
-				output2 << hex << "\t" << (int)payload[i];
-			}
-			output2 << endl;
-			// ===== END SAVE TO FILE =======================
-		}
-	}
-	output2.close();
-	input2.close();
+	std::cout << "Mavlink messages have been generated. Press any key to exit." << endl;
 }
 
-void testMagXYZ() {
-	double field[6];
-	double usedLat, usedLon, usedAlt;
-	usedLat = 37.621313 * PI / 180; // radians
-	usedLon = 302.378955 * PI / 180; // radians
-	usedAlt = 0.815068;             // km
-	cout << usedLat << " " << usedLon << " " << usedAlt << " " << yymmdd_to_julian_days(15, 10, 7) << endl;
-	cout << calc_magvar(
-		usedLat,
-		usedLon,
-		usedAlt,
-		yymmdd_to_julian_days(2015, 9, 30),
-		field) << endl;
-	cout << "B_r   : " << field[0] << endl;
-	cout << "B_th  : " << field[1] << endl;
-	cout << "B_phi : " << field[2] << endl;
-	cout << "B_x   : " << field[3] << endl;
-	cout << "B_y   : " << field[4] << endl;
-	cout << "B_z   : " << field[5] << endl;
-	double m, x, y, z;
-	x = field[3];
-	y = field[4];
-	z = field[5];
-	m = sqrt(x*x + y*y + z*z);
-	x = x / m;
-	y = y / m;
-	z = z / m;
-	cout << x << " " << y << " " << z << endl;
+double* rollPitchYaw(double x, double y, double z, bool inDegrees, bool reverse, double phi, double theta, double psi) {
+	// convert degrees to radians
+	if (inDegrees) {
+		phi *= PI / 180;
+		theta *= PI / 180;
+		psi *= PI / 180;
+	}
 
+	// reverse the Euler angles
+	if (reverse) {
+		phi = -phi;
+		theta = -theta;
+		psi = -psi;
+	}
 
-	_getch();
+	double Rx[3][3] = { { 1, 0, 0 }, { 0, cos(phi), -sin(phi) }, { 0, sin(phi), cos(phi) } };
+	double Ry[3][3] = { { cos(theta), 0, sin(theta) }, { 0, 1, 0 }, { -sin(theta), 0, cos(theta) } };
+	double Rz[3][3] = { { cos(psi), -sin(psi), 0 }, { sin(psi), cos(psi), 0 }, { 0, 0, 1 } };
+
+	double S0[3] = { x, y, z };
+
+	double S1[3] = { 0, 0, 0 };
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			if (reverse)
+				S1[i] += Rz[i][j] * S0[j]; // Yaw
+			else
+				S1[i] += Rx[i][j] * S0[j]; // Roll
+
+	double S2[3] = { 0, 0, 0 };
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			S2[i] += Ry[i][j] * S1[j]; // Pitch
+
+	double S3[3] = { 0, 0, 0 };
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			if (reverse)
+				S3[i] += Rx[i][j] * S2[j]; // Roll
+			else
+				S3[i] += Rz[i][j] * S2[j]; // Yaw
+
+	return S3;
 }
 
 void main(int argc, char* argv[]) {
-	//startCommunications();
-	//msgTesting();
-	processFiles();
-	//testMagXYZ();
+	preprocessFile("data.txt");
+	processFile();
 
-	delete message;
-	delete status;
+	//double rollD  = 78;
+	//double pitchD = 17;
+	//double yawD   = 315;
+	//
+	//double rollR  = rollD  * PI / 180;
+	//double pitchR = pitchD * PI / 180;
+	//double yawR   = yawD   * PI / 180;
+	//
+	//float xmag = 0.406549620;
+	//float ymag = 0.059383093;
+	//float zmag = 0.911696800;
+	//
+	//double* result = rollPitchYaw(xmag, ymag, zmag, false, true, rollR, pitchR, yawR);
+	//
+	//xmag = result[0];
+	//ymag = result[1];
+	//zmag = result[2];
+	//
+	//cout << "xmag: " << xmag << " | ymag: " << ymag << " | zmag: " << zmag << endl;
+	//
+	//_getch();
 }
