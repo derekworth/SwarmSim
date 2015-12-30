@@ -14,7 +14,8 @@
 #include "openeaagles/dynamics/JSBSimModel.h"
 #include "JSBSim/FGFDMExec.h"
 #include "JSBSim/models/FGFCS.h"
-#include "JSBSim/models/FGAerodynamics.h"
+#include "JSBSim/models/FGAtmosphere.h"
+#include "JSBSim/models/FGAuxiliary.h"
 
 // used for testing
 #include <iostream>
@@ -368,30 +369,40 @@ void PixhawkAP::sendHilSensor() {
 	double psiR   = uav->getHeadingR();
 	//cout << "roll: " << phiR << " | pitch: " << thetaR << " | yaw: " << psiR << endl;
 
-	// Static north pointing unit vector of magnetic field in the Inertial (NED) Frame
-	// over USAFA Airfield on 12/23/2015 (dec/inc of 8.3102/65.7409 degs respectively)
-	//float xmag = 0.406549620;
-	//float ymag = 0.059383093;
-	//float zmag = 0.911696800;
-
-	float xmag = 1;
-	float ymag = 0;
-	float zmag = 0;
+	// Static north pointing unit vector of magnetic field in the Inertial (NED) Frame 15K ft MSL
+	// over USAFA Airfield on 12/29/2015 (dec/inc of 8.3085/65.7404 degs respectively)
+	float xmag = 0.902124413;
+	float ymag = 0.131742403;
+	float zmag = 0.410871614;
 
 	// Rotate vector
 	double* reverseRotation = rollPitchYaw(xmag, ymag, zmag, false, true, phiR, thetaR, psiR);
 	xmag = reverseRotation[0];
 	ymag = reverseRotation[1];
 	zmag = reverseRotation[2];
-	//cout << "\rrollCtrl: " << hcRollCtrl << " | pitchCtrl: " << hcPitchCtrl << " | yawCtrl: " << hcYawCtrl << "                                  ";
+	//cout << "\rrollCtrl: " << hcRollCtrl << " | pitchCtrl: " << hcPitchCtrl << " | yawCtrl: " << hcYawCtrl << "                                  "; //###
 	//cout << "\rmag:" << xmag << "\t" << ymag << "\t" << zmag << "                          ";
 
-	float pressure_alt = dm->getPressureAltitudeM();
-	float abs_pressure = dm->getAbsolutePressureMillibar();
-	float diff_pressure = dm->getDifferentialPressureMillibar();
-	cout << "\rpressure_alt: " << pressure_alt << " \tabs_pressure: " << abs_pressure << "\tdiff_pressure: " << diff_pressure << "                          ";
+	JSBSim::FGFDMExec* fdmex = dm->getJSBSim();                if (fdmex == nullptr) return;      // get JSBSim
+	JSBSim::FGAtmosphere* Atmosphere = fdmex->GetAtmosphere(); if (Atmosphere == nullptr) return; // get atmosphere from JSBSim
+	JSBSim::FGAuxiliary* Auxiliary = fdmex->GetAuxiliary();    if (Auxiliary == nullptr) return;  // get auxiliary from JSBSim
 
-	float temperature = dm->getTemperatureC();
+	// get absolute pressure (in millibars)
+	float abs_pressure = static_cast<LCreal>(Atmosphere->GetPressure()) * 68.9475728 / 144;
+
+	// get pressure altitude
+	double altFt = static_cast<LCreal>(Atmosphere->GetPressureAltitude()); // in feet
+	float pressure_alt = altFt / 3.28083989502;                            // convert to meters
+
+	// get differential pressure (in millibars)
+	double density = Atmosphere->GetDensity(altFt) * 515.379;             // convert from slug/ft^3 to kg/m^3
+	double velocity = Auxiliary->GetVtrueKTS() * 0.514444444;             // convert from Kts to m/s
+	float diff_pressure = ((density * velocity * velocity * 0.5) * 0.01); // convert from pascal to millibar
+
+	// get temperature (in Celsius)
+	float temperature = (static_cast<LCreal>(Atmosphere->GetTemperature()) - 491.67) / 1.8; // convert from Rankine to Celsius using 
+
+	//cout << "\rabs_pressure: " << abs_pressure << "\tdiff_pressure: " << diff_pressure << "\tpressure_alt: " << pressure_alt << "\ttemperature: " << temperature << "                          ";
 
 	// send HIL_SENSOR and HIL_GPS messages
 	mavlink_msg_hil_sensor_pack(sid, cid, &msg2, sinceSystemBoot(),
@@ -504,6 +515,7 @@ void PixhawkAP::sendDynamicWaypoint() {
 			uav->getPositionLLA(&dwLat, &dwLon, &dwAlt);	
 		}
 		// send MISSION_ITEM (39)
+		//cout << "\rlat: " << dwLat << "\tlon: " << dwLon << "\talt: " << dwAlt << "                                            ";
 		mavlink_msg_mission_item_pack(sid, cid, &msg3, 1, 190, 0, 0, 16, 1, 1, 0, 25, 0, 0, dwLat, dwLon, dwAlt);
 		sendMessage(&msg3);
 		break;
@@ -703,7 +715,7 @@ unsigned long ReceiveThread::userFunc()
 								break;
 							case MAVLINK_MSG_ID_HIL_CONTROLS:
 								parent->setHcRollCtrl(mavlink_msg_hil_controls_get_roll_ailerons(&rcvMsg));
-								parent->setHcPitchCtrl(mavlink_msg_hil_controls_get_pitch_elevator(&rcvMsg));
+								parent->setHcPitchCtrl(-mavlink_msg_hil_controls_get_pitch_elevator(&rcvMsg));
 								parent->setHcYawCtrl(mavlink_msg_hil_controls_get_yaw_rudder(&rcvMsg));
 								parent->setHcThrottleCtrl(mavlink_msg_hil_controls_get_throttle(&rcvMsg));
 								parent->setHcSysMode(mavlink_msg_hil_controls_get_mode(&rcvMsg));

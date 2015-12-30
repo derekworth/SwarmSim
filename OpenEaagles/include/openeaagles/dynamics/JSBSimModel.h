@@ -37,11 +37,6 @@ public:
 	LCreal getCalibratedAirspeed() const override;
 
 	// Added for Pixhawk HIL interface
-	LCreal getAbsolutePressureMillibar() const;
-	LCreal getDifferentialPressureMillibar() const;
-	LCreal getPressureAltitudeFt() const;
-	LCreal getPressureAltitudeM() const;
-	LCreal getTemperatureC() const;
 	JSBSim::FGFDMExec* getJSBSim() const;
 
     LCreal getGrossWeight() const override;

@@ -132,15 +132,15 @@
 				side: blue
 				initAlt: ( Feet 15000 )
 				initHeading: ( Degrees 315 )
-				initXPos: ( NauticalMiles -8.0 )
-				initYPos: ( NauticalMiles -8.0 )
+				initXPos: ( NauticalMiles 0.0 )
+				initYPos: ( NauticalMiles 0.0 )
 				components: {
 					dynamicsModel: ( JSBSimModel
 						rootDir: "../shared/data/JSBSim/"
 						model: "Rascal"
 					)
 					pilot: ( PixhawkAP
-						portNum: 5
+						portNum: 9
 						mode: "swarm"
 						statustexts: "off"
 					)

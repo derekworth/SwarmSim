@@ -1,5 +1,5 @@
-﻿Build started 12/28/2015 4:06:03 PM.
-     1>Project "C:\Users\Derek\Documents\GitHub\SwarmSim\OpenEaaglesSwarmSims\build\vs2013\pixhawkComm.vcxproj" on node 2 (Build target(s)).
+﻿Build started 12/29/2015 1:50:06 PM.
+     1>Project "C:\Users\Derek\Documents\GitHub\SwarmSim\OpenEaaglesSwarmSims\build\vs2013\pixhawkComm.vcxproj" on node 5 (Build target(s)).
      1>Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"..\..\pixhawkComm\pixhawkComm.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\..\..\OpenEaagles\lib\vs2013 /LIBPATH:"..\..\..\OpenEaagles3rdParty\lib\vs2013-32" oeBasic_d.lib oeBasicGL_d.lib oeDafif_d.lib oeDis_d.lib oeDynamics_d.lib oeGlut_d.lib oeInstruments_d.lib oeIoDevice_d.lib oeLinearSys_d.lib oeMaps_d.lib oeOtw_d.lib oeRecorder_d.lib oeSensors_d.lib oeSimulation_d.lib oeTerrain_d.lib JSBSim_d.lib libzmq_d.lib ftgl_d.lib freetype2_d.lib freeglut_d.lib glu32.lib opengl32.lib Ws2_32.lib Winmm.lib comctl32.lib gdi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"..\..\pixhawkComm\pixhawkComm.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /ENTRY:"mainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"..\..\pixhawkComm\pixhawkComm.lib" /MACHINE:X86 obj\Debug\pixhawkComm\coremag.obj
          obj\Debug\pixhawkComm\main.obj
@@ -9,4 +9,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.31
+Time Elapsed 00:00:01.81

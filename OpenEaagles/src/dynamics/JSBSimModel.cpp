@@ -248,61 +248,6 @@ LCreal JSBSimModel::getCalibratedAirspeed() const
 // Added for Pixhawk HIL interface:
 //------------------------------------------------------------------------------
 
-LCreal JSBSimModel::getAbsolutePressureMillibar() const
-{
-	if (fdmex == nullptr) return 0.0;
-	JSBSim::FGAtmosphere* Atmosphere = fdmex->GetAtmosphere();
-	if (Atmosphere == nullptr) return 0.0;
-	double psi = static_cast<LCreal>(Atmosphere->GetPressure());
-	double offset = 0.0;
-	return psi * 68.9475728 * 0.001;
-}
-
-LCreal JSBSimModel::getDifferentialPressureMillibar() const
-{
-	if (fdmex == nullptr) return 0.0;
-	JSBSim::FGAuxiliary* Auxiliary = fdmex->GetAuxiliary();
-	if (Auxiliary == nullptr) return 0.0;
-
-	if (fdmex == nullptr) return 0.0;
-	JSBSim::FGAtmosphere* Atmosphere = fdmex->GetAtmosphere();
-	if (Atmosphere == nullptr) return 0.0;
-
-	double altFt = getPressureAltitudeFt();
-	double rho = Atmosphere->GetDensity(altFt) * 0.515379; // convert from slug/ft^3 to kg/m^3
-	double velocity = Auxiliary->GetVtrueKTS() * 514.444; // convert from Kts to m/s
-	double diff_pressure = (rho * velocity * velocity * 0.5) * 0.000001; // add offset and convert from pascal to millibar
-
-	return diff_pressure;
-}
-
-LCreal JSBSimModel::getPressureAltitudeFt() const
-{
-	if (fdmex == nullptr) return 0.0;
-	JSBSim::FGAtmosphere* Atmosphere = fdmex->GetAtmosphere();
-	if (Atmosphere == nullptr) return 0.0;
-
-	return static_cast<LCreal>(Atmosphere->GetPressureAltitude());
-}
-
-LCreal JSBSimModel::getPressureAltitudeM() const
-{
-	if (fdmex == nullptr) return 0.0;
-	JSBSim::FGAtmosphere* Atmosphere = fdmex->GetAtmosphere();
-	if (Atmosphere == nullptr) return 0.0;
-
-	return static_cast<LCreal>(Atmosphere->GetPressureAltitude()) / 3.2808399;
-}
-
-LCreal JSBSimModel::getTemperatureC() const
-{
-	if (fdmex == nullptr) return 0.0;
-	JSBSim::FGAtmosphere* Atmosphere = fdmex->GetAtmosphere();
-	if (Atmosphere == nullptr) return 0.0;
-
-	return (static_cast<LCreal>(Atmosphere->GetTemperature())-491.67)/1.8;
-}
-
 JSBSim::FGFDMExec* JSBSimModel::getJSBSim() const
 {
 	return fdmex;

@@ -1666,16 +1666,16 @@ outputEntityTypes: {
 						route: ( Route
 							autoSeqDistance: 0.25
 							components: {
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 1.5 ) altitude: ( Feet 13850 ) )
-								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles 1.1 ) altitude: ( Feet 13900 ) )
-								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles 2.0 ) altitude: ( Feet 13950 ) )
-								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles 2.9 ) altitude: ( Feet 14000 ) )
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 1.5 ) altitude: ( Feet 14000 ) )
+								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles 1.1 ) altitude: ( Feet 14300 ) )
+								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles 2.0 ) altitude: ( Feet 14100 ) )
+								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles 2.9 ) altitude: ( Feet 13800 ) )
 								( Steerpoint xPos: ( NauticalMiles 1.4 ) yPos: ( NauticalMiles 4.0 ) altitude: ( Feet 13900 ) )
-								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles 3.0 ) altitude: ( Feet 13850 ) )
-								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles 1.8 ) altitude: ( Feet 13800 ) )
+								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles 3.0 ) altitude: ( Feet 14200 ) )
+								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles 1.8 ) altitude: ( Feet 13950 ) )
 								( Steerpoint xPos: ( NauticalMiles 2.9 ) yPos: ( NauticalMiles 0.4 ) altitude: ( Feet 13700 ) )
-								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 13750 ) )
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 0.0 ) altitude: ( Feet 13800 ) )
+								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 14050 ) )
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 0.0 ) altitude: ( Feet 14250 ) )
 							}
 						)
 					)
@@ -1699,16 +1699,16 @@ outputEntityTypes: {
 						route: ( Route
 							autoSeqDistance: 0.25
 							components: {
-								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 13750 ) )
-								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles 1.8 ) altitude: ( Feet 13800 ) )
+								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 14050 ) )
+								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles 1.8 ) altitude: ( Feet 13950 ) )
 								( Steerpoint xPos: ( NauticalMiles 1.4 ) yPos: ( NauticalMiles 4.0 ) altitude: ( Feet 13900 ) )
-								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles 2.0 ) altitude: ( Feet 13950 ) )
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 1.5 ) altitude: ( Feet 13850 ) )
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 0.0 ) altitude: ( Feet 13800 ) )
+								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles 2.0 ) altitude: ( Feet 14100 ) )
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 1.5 ) altitude: ( Feet 14000 ) )
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 0.0 ) altitude: ( Feet 14250 ) )
 								( Steerpoint xPos: ( NauticalMiles 2.9 ) yPos: ( NauticalMiles 0.4 ) altitude: ( Feet 13700 ) )
-								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles 3.0 ) altitude: ( Feet 13850 ) )
-								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles 2.9 ) altitude: ( Feet 14000 ) )
-								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles 1.1 ) altitude: ( Feet 13900 ) )
+								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles 3.0 ) altitude: ( Feet 14200 ) )
+								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles 2.9 ) altitude: ( Feet 13800 ) )
+								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles 1.1 ) altitude: ( Feet 14300 ) )
 							}
 						)
 					)
@@ -1732,15 +1732,15 @@ outputEntityTypes: {
 						route: ( Route
 							autoSeqDistance: 0.25
 							components: {
-								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles 3.0 ) altitude: ( Feet 13850 ) )
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 1.5 ) altitude: ( Feet 13850 ) )
-								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles 1.8 ) altitude: ( Feet 13800 ) )
-								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles 1.1 ) altitude: ( Feet 13900 ) )
+								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles 3.0 ) altitude: ( Feet 14200 ) )
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 1.5 ) altitude: ( Feet 14000 ) )
+								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles 1.8 ) altitude: ( Feet 13950 ) )
+								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles 1.1 ) altitude: ( Feet 14300 ) )
 								( Steerpoint xPos: ( NauticalMiles 2.9 ) yPos: ( NauticalMiles 0.4 ) altitude: ( Feet 13700 ) )
-								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles 2.0 ) altitude: ( Feet 13950 ) )
-								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 13750 ) )
-								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles 2.9 ) altitude: ( Feet 14000 ) )
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 0.0 ) altitude: ( Feet 13800 ) )
+								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles 2.0 ) altitude: ( Feet 14100 ) )
+								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 14050 ) )
+								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles 2.9 ) altitude: ( Feet 13800 ) )
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles 0.0 ) altitude: ( Feet 14250 ) )
 								( Steerpoint xPos: ( NauticalMiles 1.4 ) yPos: ( NauticalMiles 4.0 ) altitude: ( Feet 13900 ) )
 							}
 						)
@@ -1749,16 +1749,16 @@ outputEntityTypes: {
 			)
 
 
-            WP01: ( Player id: 4 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles 1.5 ) initAlt: ( Feet 13850 ) )
-            WP02: ( Player id: 5 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.2 ) initYPos: ( NauticalMiles 1.1 ) initAlt: ( Feet 13900 ) )
-            WP03: ( Player id: 6 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.1 ) initYPos: ( NauticalMiles 2.0 ) initAlt: ( Feet 13950 ) )
-            WP04: ( Player id: 7 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.5 ) initYPos: ( NauticalMiles 2.9 ) initAlt: ( Feet 14000 ) )
+            WP01: ( Player id: 4 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles 1.5 ) initAlt: ( Feet 14000 ) )
+            WP02: ( Player id: 5 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.2 ) initYPos: ( NauticalMiles 1.1 ) initAlt: ( Feet 14300 ) )
+            WP03: ( Player id: 6 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.1 ) initYPos: ( NauticalMiles 2.0 ) initAlt: ( Feet 14100 ) )
+            WP04: ( Player id: 7 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.5 ) initYPos: ( NauticalMiles 2.9 ) initAlt: ( Feet 13800 ) )
             WP05: ( Player id: 8 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.4 ) initYPos: ( NauticalMiles 4.0 ) initAlt: ( Feet 13900 ) )
-            WP06: ( Player id: 9 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.7 ) initYPos: ( NauticalMiles 3.0 ) initAlt: ( Feet 13850 ) )
-            WP07: ( Player id: 10 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 3.4 ) initYPos: ( NauticalMiles 1.8 ) initAlt: ( Feet 13800 ) )
+            WP06: ( Player id: 9 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.7 ) initYPos: ( NauticalMiles 3.0 ) initAlt: ( Feet 14200 ) )
+            WP07: ( Player id: 10 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 3.4 ) initYPos: ( NauticalMiles 1.8 ) initAlt: ( Feet 13950 ) )
             WP08: ( Player id: 11 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.9 ) initYPos: ( NauticalMiles 0.4 ) initAlt: ( Feet 13700 ) )
-            WP09: ( Player id: 12 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.5 ) initYPos: ( NauticalMiles -0.5 ) initAlt: ( Feet 13750 ) )
-            WP10: ( Player id: 13 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles 0.0 ) initAlt: ( Feet 13800 ) )
+            WP09: ( Player id: 12 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.5 ) initYPos: ( NauticalMiles -0.5 ) initAlt: ( Feet 14050 ) )
+            WP10: ( Player id: 13 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles 0.0 ) initAlt: ( Feet 14250 ) )
 
 
             vect_A: ( Player id: 14 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) )
@@ -1773,8 +1773,8 @@ outputEntityTypes: {
 				side: blue
 				initAlt: ( Feet 15000 )
 				initHeading: ( Degrees 315 )
-				initXPos: ( NauticalMiles -8.0 )
-				initYPos: ( NauticalMiles -8.0 )
+				initXPos: ( NauticalMiles 0.0 )
+				initYPos: ( NauticalMiles 2.0 )
 				components: {
 					dynamicsModel: ( JSBSimModel
 						rootDir: "../shared/data/JSBSim/"
