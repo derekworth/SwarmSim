@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pixhawkHIL", "pixhawkHIL.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pixhawkComm", "pixhawkComm.vcxproj", "{E8602395-22E5-4862-9914-9B3E9D4AC8EB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pixhawkHILSwarm", "pixhawkHILSwarm.vcxproj", "{EA7CCDB8-6D95-4745-97C3-7EF65E0CF708}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,10 @@ Global
 		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Debug|Win32.Build.0 = Debug|Win32
 		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Release|Win32.ActiveCfg = Release|Win32
 		{E8602395-22E5-4862-9914-9B3E9D4AC8EB}.Release|Win32.Build.0 = Release|Win32
+		{EA7CCDB8-6D95-4745-97C3-7EF65E0CF708}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EA7CCDB8-6D95-4745-97C3-7EF65E0CF708}.Debug|Win32.Build.0 = Debug|Win32
+		{EA7CCDB8-6D95-4745-97C3-7EF65E0CF708}.Release|Win32.ActiveCfg = Release|Win32
+		{EA7CCDB8-6D95-4745-97C3-7EF65E0CF708}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

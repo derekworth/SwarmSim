@@ -1,56 +1,5 @@
-﻿Build started 12/29/2015 7:27:42 PM.
-     1>Project "C:\Users\Derek\Documents\GitHub\SwarmSim\OpenEaaglesSwarmSims\build\vs2013\pixhawkHIL.vcxproj" on node 2 (Build target(s)).
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I..\..\shared\mavlink /I..\..\..\OpenEaagles\include /I..\..\..\OpenEaagles3rdParty\include\JSBSim /I..\..\..\OpenEaagles3rdParty\include /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D ZMQ_STATIC /D _CONSOLE /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"obj\Debug\pixhawkHIL\\" /Fd"obj\Debug\pixhawkHIL\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt /Oi ..\..\pixhawkHIL\PixhawkAP.cpp
-         PixhawkAP.cpp
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\shared\mavlink\mavlink_conversions.h(48): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\shared\mavlink\mavlink_conversions.h(49): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\shared\mavlink\mavlink_conversions.h(50): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\shared\mavlink\mavlink_conversions.h(51): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\shared\mavlink\mavlink_conversions.h(52): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\shared\mavlink\mavlink_conversions.h(53): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\shared\mavlink\mavlink_conversions.h(54): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\shared\mavlink\mavlink_conversions.h(55): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\shared\mavlink\mavlink_conversions.h(56): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.h(68): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(232): warning C4172: returning address of local variable or temporary
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(357): warning C4244: 'initializing' : conversion from 'Eaagles::osg::Vec3d::value_type' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(358): warning C4244: 'initializing' : conversion from 'Eaagles::osg::Vec3d::value_type' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(359): warning C4244: 'initializing' : conversion from 'Eaagles::osg::Vec3d::value_type' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(362): warning C4244: 'initializing' : conversion from 'Eaagles::osg::Vec3d::value_type' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(363): warning C4244: 'initializing' : conversion from 'Eaagles::osg::Vec3d::value_type' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(364): warning C4244: 'initializing' : conversion from 'Eaagles::osg::Vec3d::value_type' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(374): warning C4305: 'initializing' : truncation from 'double' to 'float'
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(375): warning C4305: 'initializing' : truncation from 'double' to 'float'
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(376): warning C4305: 'initializing' : truncation from 'double' to 'float'
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(380): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(381): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(382): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(391): warning C4244: 'initializing' : conversion from 'Eaagles::LCreal' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(395): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(400): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(403): warning C4244: 'initializing' : conversion from 'Eaagles::LCreal' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(444): warning C4244: 'initializing' : conversion from 'Eaagles::LCreal' to 'uint16_t', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(445): warning C4244: 'initializing' : conversion from 'Eaagles::osg::Vec3d::value_type' to 'int16_t', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(446): warning C4244: 'initializing' : conversion from 'Eaagles::osg::Vec3d::value_type' to 'int16_t', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(447): warning C4244: 'initializing' : conversion from 'Eaagles::osg::Vec3d::value_type' to 'int16_t', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(451): warning C4244: 'initializing' : conversion from 'double' to 'uint16_t', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(519): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(662): warning C4101: 'base_mode' : unreferenced local variable
-     1>c:\users\derek\documents\github\swarmsim\openeaaglesswarmsims\pixhawkhil\pixhawkap.cpp(659): warning C4101: 'sndMsg' : unreferenced local variable
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"..\..\pixhawkHIL\pixhawkHIL.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\..\..\OpenEaagles\lib\vs2013 /LIBPATH:"..\..\..\OpenEaagles3rdParty\lib\vs2013-32" oeBasic_d.lib oeBasicGL_d.lib oeDafif_d.lib oeDis_d.lib oeDynamics_d.lib oeGlut_d.lib oeInstruments_d.lib oeIoDevice_d.lib oeLinearSys_d.lib oeMaps_d.lib oeOtw_d.lib oeRecorder_d.lib oeSensors_d.lib oeSimulation_d.lib oeTerrain_d.lib JSBSim_d.lib libzmq_d.lib ftgl_d.lib freetype2_d.lib freeglut_d.lib glu32.lib opengl32.lib Ws2_32.lib Winmm.lib comctl32.lib gdi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"..\..\pixhawkHIL\pixhawkHIL.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /ENTRY:"mainCRTStartup" /DYNAMICBASE /NXCOMPAT /IMPLIB:"..\..\pixhawkHIL\pixhawkHIL.lib" /MACHINE:X86 obj\Debug\pixhawkHIL\Factory.obj
-         obj\Debug\pixhawkHIL\main.obj
-         obj\Debug\pixhawkHIL\OnboardControlAgent.obj
-         obj\Debug\pixhawkHIL\PixhawkAP.obj
-         obj\Debug\pixhawkHIL\Serial.obj
-         obj\Debug\pixhawkHIL\SerialClass.obj
-         obj\Debug\pixhawkHIL\SimAP.obj
-         obj\Debug\pixhawkHIL\SwarmAutopilot.obj
-         obj\Debug\pixhawkHIL\UAV.obj
-         pixhawkHIL.vcxproj -> C:\Users\Derek\Documents\GitHub\SwarmSim\OpenEaaglesSwarmSims\build\vs2013\..\..\pixhawkHIL\pixhawkHIL.exe
-     1>Done Building Project "C:\Users\Derek\Documents\GitHub\SwarmSim\OpenEaaglesSwarmSims\build\vs2013\pixhawkHIL.vcxproj" (Build target(s)).
+﻿Build started 12/29/2015 8:03:51 PM.
 
 Build succeeded.
 
-Time Elapsed 00:00:04.46
+Time Elapsed 00:00:00.07

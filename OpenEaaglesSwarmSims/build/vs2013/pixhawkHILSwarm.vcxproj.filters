@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="OE Files">
+      <UniqueIdentifier>{0bb657af-b6fc-4b48-8028-617292c7c46b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CPP Files">
+      <UniqueIdentifier>{b05184eb-1d85-49aa-a058-4c97af8c4179}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\pixhawkHILSwarm\Factory.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pixhawkHILSwarm\OnboardControlAgent.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pixhawkHILSwarm\PixhawkAP.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pixhawkHILSwarm\Serial.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pixhawkHILSwarm\SerialClass.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pixhawkHILSwarm\SimAP.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pixhawkHILSwarm\SwarmAutopilot.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\pixhawkHILSwarm\UAV.h">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\pixhawkHILSwarm\Factory.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHILSwarm\main.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHILSwarm\OnboardControlAgent.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHILSwarm\PixhawkAP.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHILSwarm\Serial.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHILSwarm\SerialClass.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHILSwarm\SimAP.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHILSwarm\SwarmAutopilot.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHILSwarm\UAV.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\pixhawkHILSwarm\configs\networkSetup.epp">
+      <Filter>OE Files</Filter>
+    </None>
+    <None Include="..\..\pixhawkHILSwarm\configs\swarm.epp">
+      <Filter>OE Files</Filter>
+    </None>
+    <None Include="..\..\pixhawkHILSwarm\swarm.edl">
+      <Filter>OE Files</Filter>
+    </None>
+    <None Include="..\..\pixhawkHILSwarm\makeEdl.bat">
+      <Filter>OE Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
