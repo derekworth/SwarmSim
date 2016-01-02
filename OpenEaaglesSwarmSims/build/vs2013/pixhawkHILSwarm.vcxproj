@@ -76,9 +76,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\template\</OutDir>
-    <IntDir>obj\Debug\template\</IntDir>
-    <TargetName>template</TargetName>
+    <OutDir>..\..\pixhawkHILSwarm\</OutDir>
+    <IntDir>obj\Debug\pixhawkHILSwarm\</IntDir>
+    <TargetName>pixhawkHILSwarm</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -109,7 +109,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;_DEBUG;ZMQ_STATIC;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\OpenEaagles\include;..\..\..\OpenEaagles3rdParty\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\shared\mavlink;..\..\..\OpenEaagles\include;..\..\..\OpenEaagles3rdParty\include\JSBSim;..\..\..\OpenEaagles3rdParty\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <AdditionalOptions>/Oi %(AdditionalOptions)</AdditionalOptions>

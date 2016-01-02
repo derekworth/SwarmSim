@@ -333,12 +333,14 @@ void PixhawkAP::sendHeartbeat() {
 		sendMutex.unlock();
 		sentInitCmd = true;
 	} else {
+		cout << "Got here!" << endl;
 		mavlink_msg_heartbeat_pack(sid, cid, &msg1, 6, 8, 192, 0, 4);
 		sendMessage(&msg1);
 		// set mode to HIL
 
 		if (++smCount >= 5) smCount = 0; else return; // control set_mode refresh rate
 		if (hbBaseMode != 189) {                      // set mode to HIL if not already
+			cout << "Sent set mode message." << endl;
 			mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 189, 262144);
 			sendMessage(&msg2);
 		}

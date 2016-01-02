@@ -20,6 +20,8 @@
 
 using namespace std;
 
+CSerial serial;
+
 uint8_t isAsciiHex(char letter) {
 	if ((letter >= '0' && letter <= '9') ||
 		(letter >= 'a' && letter <= 'f') ||
@@ -44,7 +46,7 @@ uint8_t convertAsciiToHex(char letter) {
 	return hex;
 }
 
-void preprocessFile(char* filename) {
+void preprocessFile(char* filename, char* COM_X, char* COM_Y) {
 	char str[160];
 	strcpy(str, "C:\\Users\\Derek\\Desktop\\HIL Experimentation\\serialcaptures\\");
 	strcat(str, filename);
@@ -65,18 +67,30 @@ void preprocessFile(char* filename) {
 				if (line.find("    ") == 0)
 					output << line.substr(4, 47) << "\n";
 				else if (line.find("Read data") < 100)
-					output << "R\n";
+					if (line.find(COM_X) < 100)
+						output << "RX\n";
+					else if (line.find(COM_Y) < 100)
+						output << "RY\n";
+					else
+						output << "R-\n";
 				else if (line.find("Written data") < 100)
-					output << "W\n";
+					if (line.find(COM_X) < 100)
+						output << "WX\n";
+					else if (line.find(COM_Y) < 100)
+						output << "WY\n";
+					else
+						output << "W-\n";
+				else
+					output << "--\n";
 			}
 			input.close();
 		} else {
-			std::cout << "Unable to open input file.";
+			std::cout << "Unable to open input file for preprocessing.";
 			success = false;
 		}
 		output.close();
 	} else {
-		std::cout << "Unable to open output files.";
+		std::cout << "Unable to open output file for preprocessing.";
 		success = false;
 	}
 	if (success) std::cout << "Preprocessing complete." << endl;
@@ -84,13 +98,18 @@ void preprocessFile(char* filename) {
 
 void processFile() {
 	char b;
-	//cout.setf(ios::hex, ios::basefield);
 
 	mavlink_message_t* msg;
-	mavlink_message_t rMsg;
-	mavlink_message_t wMsg;
-	mavlink_status_t rStat;
-	mavlink_status_t wStat;
+
+	mavlink_message_t rMsgX;
+	mavlink_message_t wMsgX;
+	mavlink_status_t rStatX;
+	mavlink_status_t wStatX;
+
+	mavlink_message_t rMsgY;
+	mavlink_message_t wMsgY;
+	mavlink_status_t rStatY;
+	mavlink_status_t wStatY;
 
 	char param_id[17];
 	float controls[8];
@@ -104,54 +123,97 @@ void processFile() {
 	ofstream output;
 	output.open("C:\\Users\\Derek\\Desktop\\HIL Experimentation\\serialcaptures\\mavlink_output.txt", ios::trunc);
 
-	bool isWriting = false;
-	bool isReading = false;
+	bool isWritingX = false;
+	bool isWritingY = false;
+	bool isReadingX = false;
+	bool isReadingY = false;
+
 	bool msgComplete = false;
 
 	// Process Send data
 	int i = 0;
-	bool first = true;
+	bool firstHex = true;
 	uint8_t hexValue = 0;
 	bool hexValid = false;
-	//while (input >> hex >> b) {
 
 	while (input.get(b)) {
-
 		if (isAsciiHex(b)) {
-			if (first) {
+			if (firstHex) {
 				hexValue = convertAsciiToHex(b) << 4;
-				first = false;
+				firstHex = false;
 				hexValid = false;
 			} else {
 				hexValue = convertAsciiToHex(b) | hexValue;
-				first = true;
+				firstHex = true;
 				hexValid = true;
 			}
 		} else {
 			hexValue = 0;
-			first = true;
+			firstHex = true;
 			hexValid = false;
+			
 			if (b == 'W') {
-				isWriting = true;
-				isReading = false;
+				isWritingX = true;
+				isWritingY = true;
+				isReadingX = false;
+				isReadingY = false;
 			} else if (b == 'R') {
-				isWriting = false;
-				isReading = true;
+				isWritingX = false;
+				isWritingY = false;
+				isReadingX = true;
+				isReadingY = true;
+			} else if (isWritingX && isWritingY) {
+				if (b == 'X') {
+					isWritingY = false;
+				} else if (b == 'Y') {
+					isWritingX = false;
+				} else {
+					isWritingX = false;
+					isWritingY = false;
+				}
+			} else if (isReadingX && isReadingY) {
+				if (b == 'X') {
+					isReadingY = false;
+				} else if (b == 'Y') {
+					isReadingX = false;
+				} else {
+					isReadingX = false;
+					isReadingY = false;
+				}
 			}
 		}
 
-		if (hexValid && isWriting && !isReading) {
-			msgComplete = mavlink_parse_char(1, hexValue, &wMsg, &wStat);
-			msg = &wMsg;
-		} else if (hexValid && isReading && !isWriting) {
-			msgComplete = mavlink_parse_char(2, hexValue, &rMsg, &rStat);
-			msg = &rMsg;
+		if (hexValid) {
+			if (        isWritingX && !isReadingX && !isWritingY && !isReadingY) {
+				msgComplete = mavlink_parse_char(1, hexValue, &wMsgX, &wStatX);
+				msg = &wMsgX;
+			} else if (!isWritingX &&  isReadingX && !isWritingY && !isReadingY) {
+				msgComplete = mavlink_parse_char(2, hexValue, &rMsgX, &rStatX);
+				msg = &rMsgX;
+			} else if (!isWritingX && !isReadingX &&  isWritingY && !isReadingY) {
+				msgComplete = mavlink_parse_char(3, hexValue, &wMsgY, &wStatY);
+				msg = &wMsgY;
+			} else if (!isWritingX && !isReadingX && !isWritingY &&  isReadingY) {
+				msgComplete = mavlink_parse_char(4, hexValue, &rMsgY, &rStatY);
+				msg = &rMsgY;
+			}
 		}
 
 		if (msgComplete) {
 			msgComplete = false;
 			std::cout << ".";
 			// ===== SAVE TO FILE ===========================
+
+			if (isWritingX && !isReadingX && !isWritingY && !isReadingY) {
+				output << "WX" << "\t";
+			} else if (!isWritingX &&  isReadingX && !isWritingY && !isReadingY) {
+				output << "RX" << "\t";
+			} else if (!isWritingX && !isReadingX &&  isWritingY && !isReadingY) {
+				output << "WY" << "\t";
+			} else if (!isWritingX && !isReadingX && !isWritingY &&  isReadingY) {
+				output << "RY" << "\t";
+			}
+
 			output << dec << (int)msg->magic << "\t" << (int)msg->len << "\t" << (int)msg->seq << "\t" << (int)msg->sysid << "\t" << (int)msg->compid << "\t" << (int)msg->msgid << "\t" << (int)msg->checksum << "\t";
 
 			switch (msg->msgid) {
@@ -484,29 +546,131 @@ double* rollPitchYaw(double x, double y, double z, bool inDegrees, bool reverse,
 	return S3;
 }
 
-void main(int argc, char* argv[]) {
-	preprocessFile("data.txt");
-	processFile();
+void receive() {
+}
 
-	//double rollD  = 78;
-	//double pitchD = 17;
-	//double yawD   = 315;
-	//
-	//double rollR  = rollD  * PI / 180;
-	//double pitchR = pitchD * PI / 180;
-	//double yawR   = yawD   * PI / 180;
-	//
-	//float xmag = 0.406549620;
-	//float ymag = 0.059383093;
-	//float zmag = 0.911696800;
-	//
-	//double* result = rollPitchYaw(xmag, ymag, zmag, false, true, rollR, pitchR, yawR);
-	//
-	//xmag = result[0];
-	//ymag = result[1];
-	//zmag = result[2];
-	//
-	//cout << "xmag: " << xmag << " | ymag: " << ymag << " | zmag: " << zmag << endl;
-	//
-	//_getch();
+void send(char* msg) {
+	// "...sh /etc/init.d/rc.usb....." used to initiate communications
+
+	// send message
+	int len = strlen(msg);
+	int bytesSent = serial.SendData(msg, len);
+	cout << endl;
+	
+	// capture response
+	int bufferSize = 1;
+	int bytesRead = 0;
+	char* lpBuffer = new char[bufferSize + 1];
+	lpBuffer[bufferSize] = '\0';
+	if (serial.IsOpened()) {
+		while (serial.ReadDataWaiting() > 0)
+			if (serial.ReadDataWaiting() >= bufferSize) { // wait until we have enough data to fill buffer
+				serial.ReadData(lpBuffer, bufferSize);
+				for (int i = 0; i < bufferSize; i++) {
+					if (lpBuffer[i] >= 0 && lpBuffer[i] <= 127) // print only ascii text
+						cout << lpBuffer[i];
+				}
+			}
+	}
+	delete[] lpBuffer;
+
+	// prompt for new message
+	cout << "\n> ";
+}
+
+void communicateWithPixhawk(int portNum) {
+	if (!serial.Open(portNum, 9600)) {
+		cout << "Failed to open port (" << portNum << "). Press any key to exit." << endl;
+		_getch();
+		return;
+	}
+	cout << "Connected to PX4 over COM port " << portNum << "." << endl;
+	cout << "> ";
+	char a = '\0';
+	char msg[512];
+	int index = 0;
+
+	bool prevMsg = true;
+	char pMsg[512];
+	int pIndex = 0;
+	
+	while (a != 27) { // 27 is ascii for ESC (Escape)
+		a = _getch();
+		if (a == -32) {
+			a = _getch();
+			if (a == 72) { // up
+				if (!prevMsg) {
+					prevMsg = true;
+					strcpy(msg, pMsg);
+					index = pIndex;
+				}
+			} else if (a == 80) { // down
+				prevMsg = false;
+				strcpy(msg, "");
+				index = 0;
+			}
+			cout << "\r                                                                                                             \r> " << msg;
+		} else if (index >= 511) {
+			strcpy(pMsg, msg);
+			pIndex = index;
+			index = 0;
+			send(msg);
+			msg[index] = '\0';
+		} else {
+			if (a == 8) {
+				if (index > 0) {
+					msg[--index] = '\0';
+					cout << "\b \b";
+				}
+			} else if (a == 13) { // 'Enter' pressed
+				msg[index++] = a;
+				msg[index] = '\0';
+				send(msg);
+				strcpy(pMsg, msg);
+				pIndex = index - 1;
+				pMsg[pIndex] = '\0';
+				prevMsg = false;
+				index = 0;
+				strcpy(msg, "");
+			} else if (a == '@') {
+				// "...sh /etc/init.d/rc.usb....."
+				send("\x0d\x0d\x0d\x73\x68\x20\x2f\x65\x74\x63\x2f\x69\x6e\x69\x74\x2e\x64\x2f\x72\x63\x2e\x75\x73\x62\x0a\x0d\x0d\x0d\x00\0");
+			} else if (a == '#') {
+				send("mavlink stream -s HEARTBEAT -r 50\r");
+				send("mavlink stream -s GPS_RAW_INT -r 0\r");
+				send("mavlink stream -s ATTITUDE -r 0\r");
+				send("mavlink stream -s LOCAL_POSITION_NED -r 0\r");
+				send("mavlink stream -s SERVO_OUTPUT_RAW -r 0\r");
+				send("mavlink stream -s MISSION_CURRENT -r 0\r");
+				send("mavlink stream -s VFR_HUD -r 0\r");
+				send("mavlink stream -s POSITION_TARGET_GLOBAL_INT -r 0\r");
+				send("mavlink stream -s HIGHRES_IMU -r 0\r");
+				send("mavlink stream -s ACTUATOR_CONTROL_TARGET -r 0\r");
+			} else {
+				// capture message
+				msg[index++] = a;
+				msg[index] = '\0';
+				cout << a;
+			}
+		}
+	}
+	cout << "\nGoodbye!" << endl;
+	serial.Close();
+}
+
+void main(int argc, char* argv[]) {
+	switch (1) {
+	case 0:
+		preprocessFile("data.txt", "COM5", "COM8");
+		processFile();
+		break;
+	case 1:
+		communicateWithPixhawk(5);
+		break;
+	case 2:
+		char a = 105;
+		cout << a << endl;
+		_getch();
+		break;
+	}
 }

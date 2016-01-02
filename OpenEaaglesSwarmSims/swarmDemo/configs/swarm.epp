@@ -4,15 +4,16 @@
 	
 	ownship: UAV_N1
 	simulation: ( Simulation
-		latitude: 37.621313
-		longitude: -122.378955
+		// flying over USAFA Airfield (KAFF)
+		latitude: 39.0084648
+		longitude: -104.8887177
 		players: {
 			UAV_N1: ( UAV
 				id: 1
 				type: "F-16"
 				initXPos: ( NauticalMiles 0.0 )
 				initYPos: ( NauticalMiles 3.0 )
-				initAlt: ( Feet 4000 )
+				initAlt: ( Feet 14000 )
 				initHeading: ( Degrees 270 )
 				initVelocity: 41
 				side: red
@@ -24,16 +25,16 @@
 						route: ( Route
 							autoSeqDistance: 0.25
 							components: {
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  1.5 ) altitude: ( Feet 4000 ) ) // WP01
-								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles  1.1 ) altitude: ( Feet 4300 ) ) // WP02
-								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles  2.0 ) altitude: ( Feet 4100 ) ) // WP03
-								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles  2.9 ) altitude: ( Feet 3800 ) ) // WP04
-								( Steerpoint xPos: ( NauticalMiles 1.4 ) yPos: ( NauticalMiles  4.0 ) altitude: ( Feet 3900 ) ) // WP05
-								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles  3.0 ) altitude: ( Feet 4200 ) ) // WP06
-								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles  1.8 ) altitude: ( Feet 3950 ) ) // WP07
-								( Steerpoint xPos: ( NauticalMiles 2.9 ) yPos: ( NauticalMiles  0.4 ) altitude: ( Feet 3700 ) ) // WP08
-								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 4050 ) ) // WP09
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  0.0 ) altitude: ( Feet 4250 ) ) // WP10
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  1.5 ) altitude: ( Feet 14000 ) ) // WP01
+								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles  1.1 ) altitude: ( Feet 14300 ) ) // WP02
+								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles  2.0 ) altitude: ( Feet 14100 ) ) // WP03
+								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles  2.9 ) altitude: ( Feet 13800 ) ) // WP04
+								( Steerpoint xPos: ( NauticalMiles 1.4 ) yPos: ( NauticalMiles  4.0 ) altitude: ( Feet 13900 ) ) // WP05
+								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles  3.0 ) altitude: ( Feet 14200 ) ) // WP06
+								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles  1.8 ) altitude: ( Feet 13950 ) ) // WP07
+								( Steerpoint xPos: ( NauticalMiles 2.9 ) yPos: ( NauticalMiles  0.4 ) altitude: ( Feet 13700 ) ) // WP08
+								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 14050 ) ) // WP09
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  0.0 ) altitude: ( Feet 14250 ) ) // WP10
 							}
 						)
 					)
@@ -44,7 +45,7 @@
 				type: "F-16"
 				initXPos: ( NauticalMiles 1.0 )
 				initYPos: ( NauticalMiles 1.0 )
-				initAlt: ( Feet 4200 )
+				initAlt: ( Feet 14200 )
 				initHeading: ( Degrees 315 )
 				initVelocity: 41
 				side: red
@@ -56,16 +57,16 @@
 						route: ( Route
 							autoSeqDistance: 0.25
 							components: {
-								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 4050 ) ) // WP09
-								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles  1.8 ) altitude: ( Feet 3950 ) ) // WP07
-								( Steerpoint xPos: ( NauticalMiles 1.4 ) yPos: ( NauticalMiles  4.0 ) altitude: ( Feet 3900 ) ) // WP05
-								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles  2.0 ) altitude: ( Feet 4100 ) ) // WP03
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  1.5 ) altitude: ( Feet 4000 ) ) // WP01
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  0.0 ) altitude: ( Feet 4250 ) ) // WP10
-								( Steerpoint xPos: ( NauticalMiles 2.9 ) yPos: ( NauticalMiles  0.4 ) altitude: ( Feet 3700 ) ) // WP08
-								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles  3.0 ) altitude: ( Feet 4200 ) ) // WP06
-								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles  2.9 ) altitude: ( Feet 3800 ) ) // WP04
-								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles  1.1 ) altitude: ( Feet 4300 ) ) // WP02
+								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 14050 ) ) // WP09
+								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles  1.8 ) altitude: ( Feet 13950 ) ) // WP07
+								( Steerpoint xPos: ( NauticalMiles 1.4 ) yPos: ( NauticalMiles  4.0 ) altitude: ( Feet 13900 ) ) // WP05
+								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles  2.0 ) altitude: ( Feet 14100 ) ) // WP03
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  1.5 ) altitude: ( Feet 14000 ) ) // WP01
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  0.0 ) altitude: ( Feet 14250 ) ) // WP10
+								( Steerpoint xPos: ( NauticalMiles 2.9 ) yPos: ( NauticalMiles  0.4 ) altitude: ( Feet 13700 ) ) // WP08
+								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles  3.0 ) altitude: ( Feet 14200 ) ) // WP06
+								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles  2.9 ) altitude: ( Feet 13800 ) ) // WP04
+								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles  1.1 ) altitude: ( Feet 14300 ) ) // WP02
 							}
 						)
 					)
@@ -76,7 +77,7 @@
 				type: "F-16"
 				initXPos: ( NauticalMiles 2.0 )
 				initYPos: ( NauticalMiles 0.0 )
-				initAlt: ( Feet 4100 )
+				initAlt: ( Feet 14100 )
 				initHeading: ( Degrees 315 )
 				initVelocity: 41
 				side: red
@@ -88,16 +89,16 @@
 						route: ( Route
 							autoSeqDistance: 0.25
 							components: {
-								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles  3.0 ) altitude: ( Feet 4200 ) ) // WP06
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  1.5 ) altitude: ( Feet 4000 ) ) // WP01
-								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles  1.8 ) altitude: ( Feet 3950 ) ) // WP07
-								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles  1.1 ) altitude: ( Feet 4300 ) ) // WP02
-								( Steerpoint xPos: ( NauticalMiles 2.9 ) yPos: ( NauticalMiles  0.4 ) altitude: ( Feet 3700 ) ) // WP08
-								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles  2.0 ) altitude: ( Feet 4100 ) ) // WP03
-								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 4050 ) ) // WP09
-								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles  2.9 ) altitude: ( Feet 3800 ) ) // WP04
-								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  0.0 ) altitude: ( Feet 4250 ) ) // WP10
-								( Steerpoint xPos: ( NauticalMiles 1.4 ) yPos: ( NauticalMiles  4.0 ) altitude: ( Feet 3900 ) ) // WP05
+								( Steerpoint xPos: ( NauticalMiles 2.7 ) yPos: ( NauticalMiles  3.0 ) altitude: ( Feet 14200 ) ) // WP06
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  1.5 ) altitude: ( Feet 14000 ) ) // WP01
+								( Steerpoint xPos: ( NauticalMiles 3.4 ) yPos: ( NauticalMiles  1.8 ) altitude: ( Feet 13950 ) ) // WP07
+								( Steerpoint xPos: ( NauticalMiles 1.2 ) yPos: ( NauticalMiles  1.1 ) altitude: ( Feet 14300 ) ) // WP02
+								( Steerpoint xPos: ( NauticalMiles 2.9 ) yPos: ( NauticalMiles  0.4 ) altitude: ( Feet 13700 ) ) // WP08
+								( Steerpoint xPos: ( NauticalMiles 2.1 ) yPos: ( NauticalMiles  2.0 ) altitude: ( Feet 14100 ) ) // WP03
+								( Steerpoint xPos: ( NauticalMiles 1.5 ) yPos: ( NauticalMiles -0.5 ) altitude: ( Feet 14050 ) ) // WP09
+								( Steerpoint xPos: ( NauticalMiles 0.5 ) yPos: ( NauticalMiles  2.9 ) altitude: ( Feet 13800 ) ) // WP04
+								( Steerpoint xPos: ( NauticalMiles 0.0 ) yPos: ( NauticalMiles  0.0 ) altitude: ( Feet 14250 ) ) // WP10
+								( Steerpoint xPos: ( NauticalMiles 1.4 ) yPos: ( NauticalMiles  4.0 ) altitude: ( Feet 13900 ) ) // WP05
 							}
 						)
 					)
@@ -105,42 +106,42 @@
 			)
 			
 			// The following Players remain in place and act as visual way points for the navigating UAVs during simulation
-            WP01: ( Player id:  4 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles  1.5 ) initAlt: ( Feet 4000 ) ) // WP01
-            WP02: ( Player id:  5 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.2 ) initYPos: ( NauticalMiles  1.1 ) initAlt: ( Feet 4300 ) ) // WP02
-            WP03: ( Player id:  6 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.1 ) initYPos: ( NauticalMiles  2.0 ) initAlt: ( Feet 4100 ) ) // WP03
-            WP04: ( Player id:  7 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.5 ) initYPos: ( NauticalMiles  2.9 ) initAlt: ( Feet 3800 ) ) // WP04
-            WP05: ( Player id:  8 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.4 ) initYPos: ( NauticalMiles  4.0 ) initAlt: ( Feet 3900 ) ) // WP05
-            WP06: ( Player id:  9 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.7 ) initYPos: ( NauticalMiles  3.0 ) initAlt: ( Feet 4200 ) ) // WP06
-            WP07: ( Player id: 10 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 3.4 ) initYPos: ( NauticalMiles  1.8 ) initAlt: ( Feet 3950 ) ) // WP07
-            WP08: ( Player id: 11 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.9 ) initYPos: ( NauticalMiles  0.4 ) initAlt: ( Feet 3700 ) ) // WP08
-            WP09: ( Player id: 12 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.5 ) initYPos: ( NauticalMiles -0.5 ) initAlt: ( Feet 4050 ) ) // WP09
-            WP10: ( Player id: 13 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles  0.0 ) initAlt: ( Feet 4250 ) ) // WP10
+            WP01: ( Player id:  4 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles  1.5 ) initAlt: ( Feet 14000 ) ) // WP01
+            WP02: ( Player id:  5 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.2 ) initYPos: ( NauticalMiles  1.1 ) initAlt: ( Feet 14300 ) ) // WP02
+            WP03: ( Player id:  6 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.1 ) initYPos: ( NauticalMiles  2.0 ) initAlt: ( Feet 14100 ) ) // WP03
+            WP04: ( Player id:  7 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.5 ) initYPos: ( NauticalMiles  2.9 ) initAlt: ( Feet 13800 ) ) // WP04
+            WP05: ( Player id:  8 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.4 ) initYPos: ( NauticalMiles  4.0 ) initAlt: ( Feet 13900 ) ) // WP05
+            WP06: ( Player id:  9 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.7 ) initYPos: ( NauticalMiles  3.0 ) initAlt: ( Feet 14200 ) ) // WP06
+            WP07: ( Player id: 10 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 3.4 ) initYPos: ( NauticalMiles  1.8 ) initAlt: ( Feet 13950 ) ) // WP07
+            WP08: ( Player id: 11 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.9 ) initYPos: ( NauticalMiles  0.4 ) initAlt: ( Feet 13700 ) ) // WP08
+            WP09: ( Player id: 12 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.5 ) initYPos: ( NauticalMiles -0.5 ) initAlt: ( Feet 14050 ) ) // WP09
+            WP10: ( Player id: 13 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles  0.0 ) initAlt: ( Feet 14250 ) ) // WP10
 
-UAV_S001: ( UAV id: 14 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4376.0 ) initHeading: ( Degrees 158 ) initXPos: ( NauticalMiles -1.660474 ) initYPos: ( NauticalMiles -1.157490 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S002: ( UAV id: 15 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4787.0 ) initHeading: ( Degrees 239 ) initXPos: ( NauticalMiles -1.821096 ) initYPos: ( NauticalMiles -1.523749 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S003: ( UAV id: 16 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 3014.0 ) initHeading: ( Degrees 355 ) initXPos: ( NauticalMiles -1.615122 ) initYPos: ( NauticalMiles -1.800289 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S004: ( UAV id: 17 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4567.0 ) initHeading: ( Degrees 183 ) initXPos: ( NauticalMiles -1.848024 ) initYPos: ( NauticalMiles -1.608955 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S005: ( UAV id: 18 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4623.0 ) initHeading: ( Degrees 344 ) initXPos: ( NauticalMiles -1.609356 ) initYPos: ( NauticalMiles -1.469660 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S006: ( UAV id: 19 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4730.0 ) initHeading: ( Degrees 33 ) initXPos: ( NauticalMiles -1.376017 ) initYPos: ( NauticalMiles -1.394643 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S007: ( UAV id: 20 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4343.0 ) initHeading: ( Degrees 310 ) initXPos: ( NauticalMiles -1.108198 ) initYPos: ( NauticalMiles -1.845440 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S008: ( UAV id: 21 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4048.0 ) initHeading: ( Degrees 134 ) initXPos: ( NauticalMiles -1.716077 ) initYPos: ( NauticalMiles -1.476198 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S009: ( UAV id: 22 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4403.0 ) initHeading: ( Degrees 57 ) initXPos: ( NauticalMiles -1.047501 ) initYPos: ( NauticalMiles -1.811612 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S010: ( UAV id: 23 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4429.0 ) initHeading: ( Degrees 92 ) initXPos: ( NauticalMiles -1.668158 ) initYPos: ( NauticalMiles -1.304017 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S011: ( UAV id: 24 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 3999.0 ) initHeading: ( Degrees 15 ) initXPos: ( NauticalMiles -1.958825 ) initYPos: ( NauticalMiles -1.183226 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S012: ( UAV id: 25 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4938.0 ) initHeading: ( Degrees 311 ) initXPos: ( NauticalMiles -1.503827 ) initYPos: ( NauticalMiles -1.760155 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S013: ( UAV id: 26 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 3238.0 ) initHeading: ( Degrees 354 ) initXPos: ( NauticalMiles -1.615874 ) initYPos: ( NauticalMiles -1.394435 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S014: ( UAV id: 27 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4818.0 ) initHeading: ( Degrees 298 ) initXPos: ( NauticalMiles -1.066797 ) initYPos: ( NauticalMiles -1.337057 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S015: ( UAV id: 28 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 3400.0 ) initHeading: ( Degrees 128 ) initXPos: ( NauticalMiles -1.072537 ) initYPos: ( NauticalMiles -1.249445 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S016: ( UAV id: 29 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 3956.0 ) initHeading: ( Degrees 71 ) initXPos: ( NauticalMiles -1.260956 ) initYPos: ( NauticalMiles -1.442779 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S017: ( UAV id: 30 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 3769.0 ) initHeading: ( Degrees 22 ) initXPos: ( NauticalMiles -1.392905 ) initYPos: ( NauticalMiles -1.369797 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S018: ( UAV id: 31 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 3925.0 ) initHeading: ( Degrees 283 ) initXPos: ( NauticalMiles -1.475259 ) initYPos: ( NauticalMiles -1.708794 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S019: ( UAV id: 32 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4497.0 ) initHeading: ( Degrees 36 ) initXPos: ( NauticalMiles -1.443978 ) initYPos: ( NauticalMiles -1.157094 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S020: ( UAV id: 33 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4751.0 ) initHeading: ( Degrees 239 ) initXPos: ( NauticalMiles -1.986936 ) initYPos: ( NauticalMiles -1.266988 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S021: ( UAV id: 34 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 3952.0 ) initHeading: ( Degrees 334 ) initXPos: ( NauticalMiles -1.560219 ) initYPos: ( NauticalMiles -1.463176 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S022: ( UAV id: 35 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 3119.0 ) initHeading: ( Degrees 51 ) initXPos: ( NauticalMiles -1.744006 ) initYPos: ( NauticalMiles -1.741472 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S023: ( UAV id: 36 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4909.0 ) initHeading: ( Degrees 241 ) initXPos: ( NauticalMiles -1.827728 ) initYPos: ( NauticalMiles -1.173122 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S024: ( UAV id: 37 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4542.0 ) initHeading: ( Degrees 339 ) initXPos: ( NauticalMiles -1.061858 ) initYPos: ( NauticalMiles -1.540197 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
-UAV_S025: ( UAV id: 38 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 4281.0 ) initHeading: ( Degrees 11 ) initXPos: ( NauticalMiles -1.982493 ) initYPos: ( NauticalMiles -1.769720 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S01: ( UAV id: 14 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 15928.0 ) initHeading: ( Degrees 309 ) initXPos: ( NauticalMiles -2.072156 ) initYPos: ( NauticalMiles 1.525871 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S02: ( UAV id: 15 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 13647.5 ) initHeading: ( Degrees 319 ) initXPos: ( NauticalMiles -1.684565 ) initYPos: ( NauticalMiles 1.687177 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S03: ( UAV id: 16 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 14256.6 ) initHeading: ( Degrees 200 ) initXPos: ( NauticalMiles -2.900761 ) initYPos: ( NauticalMiles 2.470082 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S04: ( UAV id: 17 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 16787.7 ) initHeading: ( Degrees 56 ) initXPos: ( NauticalMiles -1.370518 ) initYPos: ( NauticalMiles 1.114406 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S05: ( UAV id: 18 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 13209.1 ) initHeading: ( Degrees 50 ) initXPos: ( NauticalMiles -1.531524 ) initYPos: ( NauticalMiles 2.250883 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S06: ( UAV id: 19 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 14102.4 ) initHeading: ( Degrees 238 ) initXPos: ( NauticalMiles -2.920970 ) initYPos: ( NauticalMiles 1.254390 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S07: ( UAV id: 20 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 14762.6 ) initHeading: ( Degrees 228 ) initXPos: ( NauticalMiles -2.106668 ) initYPos: ( NauticalMiles 2.769603 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S08: ( UAV id: 21 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 13675.3 ) initHeading: ( Degrees 116 ) initXPos: ( NauticalMiles -2.434359 ) initYPos: ( NauticalMiles 2.870306 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S09: ( UAV id: 22 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 13682.8 ) initHeading: ( Degrees 163 ) initXPos: ( NauticalMiles -2.372497 ) initYPos: ( NauticalMiles 1.081822 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S10: ( UAV id: 23 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 15378.3 ) initHeading: ( Degrees 338 ) initXPos: ( NauticalMiles -2.701286 ) initYPos: ( NauticalMiles 1.363640 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S11: ( UAV id: 24 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 15906.3 ) initHeading: ( Degrees 266 ) initXPos: ( NauticalMiles -1.369193 ) initYPos: ( NauticalMiles 2.545725 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S12: ( UAV id: 25 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 16188.2 ) initHeading: ( Degrees 228 ) initXPos: ( NauticalMiles -2.407415 ) initYPos: ( NauticalMiles 2.813706 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S13: ( UAV id: 26 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 14331.6 ) initHeading: ( Degrees 208 ) initXPos: ( NauticalMiles -1.344776 ) initYPos: ( NauticalMiles 1.991050 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S14: ( UAV id: 27 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 15614.8 ) initHeading: ( Degrees 233 ) initXPos: ( NauticalMiles -1.956701 ) initYPos: ( NauticalMiles 2.815943 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S15: ( UAV id: 28 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 16467.7 ) initHeading: ( Degrees 271 ) initXPos: ( NauticalMiles -1.428340 ) initYPos: ( NauticalMiles 1.974151 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S16: ( UAV id: 29 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 15478.9 ) initHeading: ( Degrees 299 ) initXPos: ( NauticalMiles -1.007102 ) initYPos: ( NauticalMiles 1.692544 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S17: ( UAV id: 30 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 15924.8 ) initHeading: ( Degrees 78 ) initXPos: ( NauticalMiles -2.203219 ) initYPos: ( NauticalMiles 2.516147 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S18: ( UAV id: 31 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 14463.2 ) initHeading: ( Degrees 10 ) initXPos: ( NauticalMiles -2.492555 ) initYPos: ( NauticalMiles 1.177892 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S19: ( UAV id: 32 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 16101.7 ) initHeading: ( Degrees 287 ) initXPos: ( NauticalMiles -1.444041 ) initYPos: ( NauticalMiles 1.216740 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S20: ( UAV id: 33 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 15629.1 ) initHeading: ( Degrees 311 ) initXPos: ( NauticalMiles -1.482372 ) initYPos: ( NauticalMiles 1.392831 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S21: ( UAV id: 34 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 14621.8 ) initHeading: ( Degrees 271 ) initXPos: ( NauticalMiles -2.665953 ) initYPos: ( NauticalMiles 2.717439 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S22: ( UAV id: 35 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 15534.7 ) initHeading: ( Degrees 335 ) initXPos: ( NauticalMiles -2.570478 ) initYPos: ( NauticalMiles 2.926414 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S23: ( UAV id: 36 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 13602.5 ) initHeading: ( Degrees 82 ) initXPos: ( NauticalMiles -2.709845 ) initYPos: ( NauticalMiles 1.605298 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S24: ( UAV id: 37 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 14548.1 ) initHeading: ( Degrees 67 ) initXPos: ( NauticalMiles -1.322966 ) initYPos: ( NauticalMiles 2.067790 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
+UAV_S25: ( UAV id: 38 type: "F-16" initVelocity: 41 side: blue initAlt: ( Feet 14302.8 ) initHeading: ( Degrees 256 ) initXPos: ( NauticalMiles -2.104937 ) initYPos: ( NauticalMiles 2.008877 ) components: { dynamicsModel: ( JSBSimModel rootDir: "../shared/data/JSBSim/" model: "Rascal" ) pilot: ( SimAP mode: "swarm" ) oca: ( OnboardControlAgent desiredSeparation: 2000 ) } )
 
 		}
 	)

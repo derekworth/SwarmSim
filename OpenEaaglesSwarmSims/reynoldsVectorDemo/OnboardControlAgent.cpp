@@ -98,7 +98,7 @@ Eaagles::osg::Vec3d OnboardControlAgent::getSeparationVector() {
 				double dist = getDistance(pos1, pos2); // calc distance
 				if(dist > 0 && dist < getDesiredSeparation()) { // determine if UAVs are within range to communicate
 					osg::Vec3d v = pos1-pos2;
-					osg::Vec3d s = v*pow((1000/v.length()), 2);
+					osg::Vec3d s = v*pow((desiredSep / v.length()), 2);
 					sum += s;
 					count++;
 				}

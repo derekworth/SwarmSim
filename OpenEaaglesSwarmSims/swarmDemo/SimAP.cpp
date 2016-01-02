@@ -691,10 +691,6 @@ void SimAP::updateData(const LCreal dt) {
 		if (fdm == nullptr) return;
 	}
 
-	if (uav->getID() == 1) {
-		cout << "roll: " << uav->getRollR() << "\t| pitch: " << uav->getPitchR() << "\t| yaw: " << uav->getHeadingR() << " | : " << endl;
-	}
-
 	// set pitch and roll set points based on commanded altitude and bearing
 	setPitchSetPoint();
 	setRollSetPoint();

@@ -4,6 +4,7 @@
 	
 	ownship: UAV_N1
 	simulation: ( Simulation
+		// flying over USAFA Airfield (KAFF)
 		latitude: 39.0084648
 		longitude: -104.8887177
 		players: {
