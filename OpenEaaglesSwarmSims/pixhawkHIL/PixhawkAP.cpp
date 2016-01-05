@@ -322,7 +322,7 @@ uint64_t PixhawkAP::sinceSystemBoot() const {
 
 // HEARTBEAT (0)
 void PixhawkAP::sendHeartbeat() {
-	if (++hbCount >= 60) hbCount = 0; else return; // control heartbeat refresh rate
+	if (++hbCount >= 50) hbCount = 0; else return; // control heartbeat refresh rate
 
 	if (hbSid == 0 && !sentInitCmd) {
 		// ask pixhawk to start communicating over mavlink
@@ -333,7 +333,6 @@ void PixhawkAP::sendHeartbeat() {
 		sendMutex.unlock();
 		sentInitCmd = true;
 	} else {
-		cout << "Got here!" << endl;
 		mavlink_msg_heartbeat_pack(sid, cid, &msg1, 6, 8, 192, 0, 4);
 		sendMessage(&msg1);
 		// set mode to HIL
@@ -428,7 +427,7 @@ void PixhawkAP::sendHilSensor() {
 
 // HIL_GPS (113)
 void PixhawkAP::sendHilGps() {
-	if (++gpsCount >= 6) gpsCount = 0; else return; // control refresh rate
+	if (++gpsCount >= 5) gpsCount = 0; else return; // control refresh rate
 
 	UAV* uav = dynamic_cast<UAV*>(getOwnship());
 	if (uav != nullptr) {
@@ -529,7 +528,7 @@ void PixhawkAP::sendDynamicWaypoint() {
 			currState = SEND_ITEM;
 		break;
 	case INTERMISSION:
-		if (++msnTimeout >= 300) // wait a few seconds between dynamic waypoint updates
+		if (++msnTimeout >= 250) // wait a few seconds between dynamic waypoint updates
 			currState = SEND_COUNT;
 		break;
 	}

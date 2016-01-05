@@ -44,7 +44,7 @@ namespace Eaagles {
 		const char* configFile = "swarm.edl";
 
 		// Background frame rate (Hz)
-		const int bgRate = 60;
+		const int bgRate = 50;
 
 		// System descriptions
 		static Simulation::Station* station = 0;
@@ -131,6 +131,7 @@ namespace Eaagles {
 			cout << "Simulation running..." << endl;
 			int min = 20;
 			int max = 0;
+			int refresh = 0; // refresh wait time status every 60 sim updates
 			while(true) {
 				// Update background thread
 				station->updateData( static_cast<LCreal>(dt) );
@@ -143,9 +144,17 @@ namespace Eaagles {
 				int sleepTime = static_cast<int>(nextFrameStart*1000.0);
 
 				// print wait times to console
-				//if (sleepTime < min) { min = sleepTime; }
-				//if (sleepTime > max) { max = sleepTime;	}
-				//cout << "\rWAIT TIMES: min(" << min << ") max(" << max << ") cur(" << sleepTime << ")          ";
+				if (sleepTime < min) { min = sleepTime; }
+				if (sleepTime > max) { max = sleepTime; }
+				if (min < -500) { // check for divergence from real-time
+					cout << "ERROR: failed to achieve real-time execution." << endl;
+					_getch();
+					exit(0);
+				}
+				if (refresh++ >= 60) { // print to console once every 60 iterations
+					refresh = 0;
+					cout << "\rWAIT TIMES: min(" << min << ") max(" << max << ") cur(" << sleepTime << ")          ";
+				}
 
 				// wait for the next frame
 				if (sleepTime > 0)
