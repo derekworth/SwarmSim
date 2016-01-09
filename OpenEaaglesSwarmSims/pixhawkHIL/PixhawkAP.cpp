@@ -544,10 +544,12 @@ void PixhawkAP::updatePX4() {
 }
 
 //------------------------------------------------------------------------------
-// Simulation driven update method (non-time critical, ~60Hz)
+// dynamics() is called by updateTC() and therefore a time-critical method.
+// Autopilot updates are time-critical because control inputs must sync with
+// the FDM (i.e. JSBSim) which is also a time-critical process.
 //------------------------------------------------------------------------------
 
-void PixhawkAP::updateData(const LCreal dt) {
+void PixhawkAP::dynamics(const LCreal dt) {
 	// initialize HIL if not done so already
 	if (!serial.IsOpened()) { // open serial connection if not already
 		if (!connectToPixhawk()) { // attempt to open serial port to PX4
@@ -657,19 +659,21 @@ unsigned long ReceiveThread::userFunc()
 {
 	PixhawkAP* parent = dynamic_cast<PixhawkAP*>(getParent());
 	if (parent != nullptr) {
+		
+		// mavlink variables
 		mavlink_message_t sndMsg;
 		mavlink_message_t rcvMsg;
 		mavlink_status_t mavStatus;
-		uint8_t base_mode;
-		bool pixhawkArmed = false;
+		char text[MAVLINK_MSG_ID_STATUSTEXT_LEN + 1]; // used by STATUSTEXT messages
+
+		// buffer variables
 		int bufferSize = 64;
-		int bytesRead = 0;
-		char* lpBuffer = new char[bufferSize];
-		char text[MAVLINK_MSG_ID_STATUSTEXT_LEN + 1];
+		int bytesRead = 0;                            // index for lpBuffer
+		char* lpBuffer = new char[bufferSize];        // holds incoming serial data
 
 		// continuously receive serial data
 		while (parent->isReceiving()) {
-			if (parent->isSerialOpen()) {
+			if (parent->isSerialOpen()) { // prevents read attempts to closed ports
 				if (parent->getSerialDataWaiting() > bufferSize) { // wait until we have enough data to fill buffer
 					parent->setSerialReadData(lpBuffer, bufferSize); // refill buffer
 					while (bytesRead < bufferSize) {
@@ -731,7 +735,7 @@ unsigned long ReceiveThread::userFunc()
 							} // end switch
 						} // end if
 					} // end while true
-					bytesRead = 0;
+					bytesRead = 0; // reset the lpBuffer index
 				} else {
 					std::this_thread::yield(); // allows other threads to run if serial buffer is empty
 				}

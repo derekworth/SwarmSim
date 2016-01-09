@@ -676,15 +676,16 @@ void SimAP::setWaypoint(const osg::Vec3& pos, const LCreal altM) {
 }
 
 //------------------------------------------------------------------------------
-// Autopilot updates are not Time-Critical because control inputs are not
-// Time-Critical, i.e. UAV can fly with slightly delayed control inputs
+// dynamics() is called by updateTC() and therefore a time-critical method.
+// Autopilot updates are time-critical because control inputs must sync with
+// the FDM (i.e. JSBSim) which is also a time-critical process.
 //------------------------------------------------------------------------------
 
-void SimAP::updateData(const LCreal dt) {
-	if (mode == 0) return; // allow manual flight
+void SimAP::dynamics(const LCreal dt) {
+	if (mode == nullptr) return; // allow manual flight
 
 	uav = dynamic_cast<Swarms::UAV*>(getOwnship()); // get UAV
-	if (uav == 0) return;
+	if (uav == nullptr) return;
 
 	if (fdm == nullptr) {
 		fdm = dynamic_cast<Eaagles::Dynamics::JSBSimModel*>(uav->getDynamicsModel()); // get UAV's flight dynamics model
@@ -699,8 +700,9 @@ void SimAP::updateData(const LCreal dt) {
 	fdm->setControlStickPitchInput(getFwdStick());
 	fdm->setControlStickRollInput(getSideStick());
 	fdm->setRudderPedalInput(getRudder());
+	fdm->setThrottles(&throttle, 1);
 
-	BaseClass::updateData(dt);
+	BaseClass::dynamics(dt);
 }
 
 } // end Swarms namespace

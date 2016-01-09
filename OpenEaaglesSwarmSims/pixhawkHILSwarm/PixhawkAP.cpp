@@ -543,10 +543,12 @@ void PixhawkAP::updatePX4() {
 }
 
 //------------------------------------------------------------------------------
-// Simulation driven update method (non-time critical, ~60Hz)
+// dynamics() is called by updateTC() and therefore a time-critical method.
+// Autopilot updates are time-critical because control inputs must sync with
+// the FDM (i.e. JSBSim) which is also a time-critical process.
 //------------------------------------------------------------------------------
 
-void PixhawkAP::updateData(const LCreal dt) {
+void PixhawkAP::dynamics(const LCreal dt) {
 	// initialize HIL if not done so already
 	if (!serial.IsOpened()) { // open serial connection if not already
 		if (!connectToPixhawk()) { // attempt to open serial port to PX4
@@ -565,7 +567,6 @@ void PixhawkAP::updateData(const LCreal dt) {
 			exit(0);
 		}
 	}
-	
 
 	// allow manual flight
 	if (mode == 0) return;

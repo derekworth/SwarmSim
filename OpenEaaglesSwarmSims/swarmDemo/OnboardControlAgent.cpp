@@ -49,11 +49,12 @@ OnboardControlAgent::OnboardControlAgent()
 {
 	STANDARD_CONSTRUCTOR()
 
-	sFactor    = 0.5;
-	aFactor    = 10.0;
-	cFactor    = 1.0;
-	commDist   = 27780; // measured in meters (15 Nautical Miles)
-	desiredSep = 1000;  // in meters
+	sFactor     = 0.5;
+	aFactor     = 10.0;
+	cFactor     = 1.0;
+	commDist    = 27780; // measured in meters (15 Nautical Miles)
+	desiredSep  = 1000;  // in meters
+	refreshCnt  = rand() % refreshRate;
 }
 
 //------------------------------------------------------------------------------------
@@ -63,11 +64,12 @@ void OnboardControlAgent::copyData(const OnboardControlAgent& org, const bool)
 {
 	BaseClass::copyData(org);
 
-	sFactor    = org.sFactor;
-	aFactor    = org.aFactor;
-	cFactor    = org.cFactor;
-	commDist   = org.commDist;
-	desiredSep = org.desiredSep;
+	sFactor     = org.sFactor;
+	aFactor     = org.aFactor;
+	cFactor     = org.cFactor;
+	commDist    = org.commDist;
+	desiredSep  = org.desiredSep;
+	refreshCnt  = rand() % refreshRate;
 }
 
 //------------------------------------------------------------------------------------
@@ -273,11 +275,12 @@ bool OnboardControlAgent::setSlotDesiredSeparation(const Basic::Distance* const 
 }
 
 //------------------------------------------------------------------------------------
-// Update non-time critical stuff here
+// DWF updates are not time-critical
 //------------------------------------------------------------------------------------
 
-void OnboardControlAgent::updateData(const LCreal dt)
-{
+void OnboardControlAgent::updateData(const LCreal dt) {
+	if (++refreshCnt >= refreshRate) refreshCnt = 0; else return; // Control DWF refresh rate
+
 	Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(getOwnship());
 	if (uav == 0) return;
 	Swarms::SimAP* ap = dynamic_cast<Swarms::SimAP*>(uav->getPilot());

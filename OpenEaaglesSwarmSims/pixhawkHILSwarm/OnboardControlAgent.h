@@ -58,6 +58,7 @@ private:
 	double cFactor;
 	double commDist;   // in meters
 	double desiredSep; // in meters
+	int    refreshRate = 250;
 	int    refreshCnt;
 };
 

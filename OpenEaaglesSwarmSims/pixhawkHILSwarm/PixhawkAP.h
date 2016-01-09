@@ -110,8 +110,8 @@ public:
 	void setYawControl(double input)      { hcYawCtrl      = input; }
 	void setThrottleControl(double input) { hcThrottleCtrl = input; }
 
-	// update method (non-time critical)
-	virtual void updateData(const LCreal dt = 0.0);
+	// update method (time critical)
+	virtual void dynamics(const LCreal dt) override;
 
 protected:
 	bool setSlotPortNum(const Basic::Number* const msg);

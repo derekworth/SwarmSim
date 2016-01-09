@@ -83,7 +83,7 @@ public:
 	virtual void setMode(const Basic::String* const m);
 	virtual void setWaypoint(const osg::Vec3& pos, const LCreal altM);
 
-	virtual void updateData(const LCreal dt = 0.0);
+	virtual void dynamics(const LCreal dt) override;
 
 protected:
 	bool setSlotRollKp(const Basic::Number* const msg);
@@ -165,6 +165,8 @@ private:
 
 	double integHdgError;
 	double derivHdgError;
+
+	double throttle = 1.0;
 
 	Eaagles::Basic::safe_ptr<const Basic::String> mode;
 

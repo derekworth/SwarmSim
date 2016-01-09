@@ -30,9 +30,7 @@
 #include <iostream>
 #include "conio.h"
 #include <iomanip>
-
-//#include <mavlink\include\mavlink.h>
-//#include <FastSerial\FastSerial.h>
+#include <fstream>  // used to write to file
 
 using namespace std;
 
@@ -85,7 +83,7 @@ namespace Eaagles {
 		//-----------------------------------------------------------------------------
 		// Eaagles::Swarms::main() -- Main routine
 		//-----------------------------------------------------------------------------
-		void main(int argc, char* argv[])
+		void exec(int argc, char* argv[])
 		{
 			// parse arguments
 			for (int i = 1; i < argc; i++) {
@@ -98,14 +96,13 @@ namespace Eaagles {
 
 			// Reset the Simulation
 			station->event(Basic::Component::RESET_EVENT);
-
 			// Set timer for the background tasks
 			station->tcFrame( static_cast<LCreal>(1.0/static_cast<double>(station->getTimeCriticalRate())) );
 			
 			// Create the Time Critical Thread
-			station->createTimeCriticalProcess();
+			//station->createTimeCriticalProcess();
 			// short pause to allow os to startup thread
-			lcSleep(2000);
+			//lcSleep(2000);
 			
 			// Calc delta time for background thread
 			double dt = 1.0/static_cast<double>(bgRate);
@@ -114,61 +111,75 @@ namespace Eaagles {
 			double simTime = 0.0;                 // Simulator time reference
 			double startTime = getComputerTime(); // Time of day (sec) run started
 
-			// prints the mode of each UAV
-			int i = 1;
-			while (true) {
-				Eaagles::Basic::Pair* pair = station->getPlayers()->getPosition(i);
-				if (pair == nullptr) break;
-				Eaagles::Swarms::UAV* uav = dynamic_cast<Eaagles::Swarms::UAV*>(pair->object());
-				if (uav != nullptr) {
-					Eaagles::Swarms::SimAP* ap = dynamic_cast<Eaagles::Swarms::SimAP *>(uav->getPilot());
-					cout << "Player(" << i << ") Mode: " << ap->getMode() << endl;
-				}
-				i++;
-			}
-
 			cout << "Simulation running..." << endl;
 			int min = 20;
 			int max = 0;
 			int refresh = 0; // refresh wait time status every 60 sim updates
-			while (true) {
+			//int timeSlots[22]; // Holds count for values -5000 to +20
+			//for (int i = 0; i < 22; i++) {
+			//	timeSlots[i] = 0;
+			//}
+			double elapsedTime = 0; // in seconds
+			while (true) { // runs for 10 minutes
 				// Update background thread
-				station->updateData( static_cast<LCreal>(dt) );
+				station->updateData(static_cast<LCreal>(dt));
+				// Update time-critical thread
+				station->updateTC(static_cast<LCreal>(dt));
 			
 				simTime += dt;                      // time of next frame
 				double timeNow = getComputerTime(); // time now
 			
-				double elapsedTime = timeNow - startTime;
+				elapsedTime = timeNow - startTime;
 				double nextFrameStart = simTime - elapsedTime;
 				int sleepTime = static_cast<int>(nextFrameStart*1000.0);
 
 				// print wait times to console
 				if (sleepTime < min) { min = sleepTime; }
 				if (sleepTime > max) { max = sleepTime; }
-				if (min < -500) { // check for divergence from real-time
-					cout << "ERROR: failed to achieve real-time execution." << endl;
-					_getch();
-					exit(0);
-				}
+				//if (sleepTime < 0) {
+				//	timeSlots[0]++;
+				//} else {
+				//	timeSlots[sleepTime]++;
+				//}
+				//if (min < -5000) { // check for divergence from real-time
+				//	cout << "ERROR: failed to achieve real-time execution." << endl;
+				//	_getch();
+				//	exit(0);
+				//}
 				if (refresh++ >= 60) { // print to console once every 60 iterations
 					refresh = 0;
-					cout << "\rWAIT TIMES: min(" << min << ") max(" << max << ") cur(" << sleepTime << ")          ";
+					cout << "\rReal-time: " << (int)elapsedTime << " | sim-time: " << simTime << " | ratio: " << (int)elapsedTime / simTime << "                   ";
 				}
 
 				// wait for the next frame
 				if (sleepTime > 0)
 					lcSleep(sleepTime);
 			}
+			//cout << "\nSimulation successfully ran for 10 minutes." << endl;
+			//
+			//// "append to" file
+			//ofstream output;
+			//output.open("sim-results.csv", ios::trunc);
+			//
+			//if (output.is_open()) {
+			//	for (int i = 0; i < 22; i++) {
+			//		output << i-1 << "," << timeSlots[i] << "\n";
+			//	}
+			//	output.close();
+			//	cout << "Results successfully written to file 'sim-results.csv'." << endl;
+			//} else {
+			//	cout << "ERROR: results not written to file, 'sim-results.csv' could not be opened." << endl;
+			//}
 		}
 	} // End Swarms namespace
 } // End Eaagles namespace
+
 
 //-----------------------------------------------------------------------------
 // main() -- Main routine
 //-----------------------------------------------------------------------------
 void main(int argc, char* argv[])
 {
-	Eaagles::Swarms::main(argc, argv);
-	//_getch();
-
+	Eaagles::Swarms::exec(argc, argv);
+	_getch();
 }
