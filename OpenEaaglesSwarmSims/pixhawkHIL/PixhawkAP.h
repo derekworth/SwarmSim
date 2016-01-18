@@ -97,12 +97,16 @@ public:
 	void setMsnItmSent(const bool mis)          { msnItmSent = mis; }
 	void setMsnAckRcvd(const bool mar)          { msnAckRcvd = mar; }
 	void setMsnTimeout(const int  mto)          { msnTimeout = mto; }
+	void setDwTooFar(bool tooFar)               { dwTooFar = tooFar; }
 
 	// utility methods
 	virtual bool sendMessage(mavlink_message_t* msg);
+	virtual bool sendBytes(char* msg);
 	virtual uint64_t sinceSystemBoot() const;
 	bool isInitialized();
+	bool isDwTooFar() { return dwTooFar; }
 	double* rollPitchYaw(double x, double y, double z, bool inDegrees, bool reverse, double phi, double theta, double psi);
+	void recordMessage(uint8_t msgid, bool sending);
 	
 	void setRollControl(double input)     { hcRollCtrl     = input; }
 	void setPitchControl(double input)    { hcPitchCtrl    = input; }
@@ -130,6 +134,7 @@ private:
 	// communications management attributes
 	CSerial serial;
 	mutex sendMutex;
+	mutex recordMutex;
 	chrono::system_clock::time_point startTime;
 	Basic::safe_ptr<Basic::Thread> rcvThread;
 	mavlink_message_t msg1; // heartbeat
@@ -142,6 +147,9 @@ private:
 	int hbCount;  // heartbeat count
 	int dwCount;  // dynamic waypoint count
 	int smCount;  // set mode count
+	int magCount; // set mode count
+
+	float xmag, ymag, zmag;
 
 	uint8_t sid;
 	uint8_t cid;
@@ -177,6 +185,7 @@ private:
 	double dwLon;
 	double dwAlt;
 	osg::Vec3 dwLLA;
+	bool dwTooFar = true;
 
 	// waypoint handshake attributes
 	bool msnCntSent;
@@ -185,6 +194,14 @@ private:
 	bool msnAckRcvd;
 	int  msnTimeout;
 	MsnState currState;
+
+	// mavlink message tracking
+	int     messageTSs[10000]; // timestamps
+	uint8_t messageIDs[10000]; // IDs
+	bool    messageDRs[10000]; // directions (i.e. sending/receiving)
+	int messageIDsIndex;
+	bool printedMessageIDs;
+	double messageIDStartTime; // in seconds
 
 	//-------------------------
 	// initial configurations

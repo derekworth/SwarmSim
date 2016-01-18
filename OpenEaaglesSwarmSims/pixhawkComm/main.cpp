@@ -13,6 +13,8 @@
 #include <stdint.h> // used for int8_t, int16_t, etc.
 #include <windows.h>
 #include "Serial.h"  // used for serial port communication
+#include "coremag.hxx"
+#include "ctime"
 
 #include "mavlink\mavlink_types.h"
 #include "mavlink\common\mavlink.h"
@@ -546,9 +548,6 @@ double* rollPitchYaw(double x, double y, double z, bool inDegrees, bool reverse,
 	return S3;
 }
 
-void receive() {
-}
-
 void send(char* msg) {
 	// "...sh /etc/init.d/rc.usb....." used to initiate communications
 
@@ -658,19 +657,70 @@ void communicateWithPixhawk(int portNum) {
 	serial.Close();
 }
 
+void magTesting() {
+	double field[6];
+	cout << calc_magvar(0.6808261469066, -1.8306534720553, 4.572, yymmdd_to_julian_days(16, 1, 9), field) << endl;
+	cout << field[0] << endl;
+	cout << field[1] << endl;
+	cout << field[2] << endl;
+	cout << field[3] << endl;
+	cout << field[4] << endl;
+	cout << field[5] << endl;
+	_getch();
+}
+
+void testTime() {
+	time_t t = time(NULL);
+	tm* timePtr = localtime(&t);
+	cout << "day: " << timePtr->tm_mday << endl;
+	cout << "mth: " << timePtr->tm_mon+1 << endl;
+	cout << "yr:  " << timePtr->tm_year-100 << endl;
+	_getch();
+}
+
+void testCharSize() {
+	char* foo = "\x0d\x0d\x0d\x73\x68\x20\x2f\x65\x74\x63\x2f\x69\x6e\x69\x74\x2e\x64\x2f\x72\x63\x2e\x75\x73\x62\x0a\x0d\x0d\x0d\x0d";
+	cout << strlen(foo);
+	_getch();
+}
+
+void testStrStr() {
+	char* foo = "Derek is the coolest cat!";
+	if (strstr(foo, "derek") == nullptr) {
+		cout << "Not found:(";
+	} else {
+		cout << "Found:)";
+	}
+	_getch();
+}
+
+void testGeneral() {
+	int portNum = 5;
+	ofstream output;
+	char filename[20];
+	sprintf(filename, "COM%d_messageIDs.csv", portNum);
+	output.open(filename, ios::trunc);
+	if (output.is_open()) {
+		// print messages
+		for (int i = 0; i < 50; i++) {
+			if (rand() % 50 < 13) {
+				output << "SND," << i << "," << rand() % 50 << "\n";
+			} else {
+				output << "RCV," << i << "," << rand() % 50 << "\n";
+			}
+		}
+		output.close();
+	}
+}
+
 void main(int argc, char* argv[]) {
-	switch (1) {
-	case 0:
-		preprocessFile("data.txt", "COM5", "COM8");
-		processFile();
-		break;
-	case 1:
-		communicateWithPixhawk(5);
-		break;
-	case 2:
-		char a = 105;
-		cout << a << endl;
-		_getch();
-		break;
+	switch (6) {
+	case 0: preprocessFile("com5and8.txt", "COM5", "COM8"); processFile(); break;
+	case 1: communicateWithPixhawk(5); break;
+	case 2: magTesting(); break;
+	case 3: testTime(); break;
+	case 4: testCharSize(); break;
+	case 5: testStrStr(); break;
+	case 6: testGeneral(); break;
 	}
 }

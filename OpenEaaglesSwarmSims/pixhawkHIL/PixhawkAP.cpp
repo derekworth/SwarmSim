@@ -17,6 +17,9 @@
 #include "JSBSim/models/FGAtmosphere.h"
 #include "JSBSim/models/FGAuxiliary.h"
 
+#include "coremag.hxx"
+#include "ctime"
+
 // used for testing
 #include <iostream>
 #include <iomanip>
@@ -64,9 +67,10 @@ PixhawkAP::PixhawkAP()
 
 	receiving        = false;
 	sentInitCmd      = false;
-    gpsCount         = rand() % 6;	// start randomly between 0 - 5
-    hbCount          = rand() % 60;	// start randomly between 0 - 59
+    gpsCount         = rand() % 5;	// start randomly between 0 - 4
+    hbCount          = rand() % 50;	// start randomly between 0 - 49
 	smCount          = 0;
+	magCount         = -1;
 	sid              = 255;
 	cid              = 0;
 	hbSid			 = 0;
@@ -102,6 +106,10 @@ PixhawkAP::PixhawkAP()
 	setMode(new Basic::String("nav"));
 	statustexts = nullptr;
 	setStatustexts(new Basic::String("off"));
+
+	messageIDStartTime = getComputerTime();
+	messageIDsIndex = 0;
+	printedMessageIDs = false;
 }
 
 //------------------------------------------------------------------------------------
@@ -115,6 +123,7 @@ void PixhawkAP::copyData(const PixhawkAP& org, const bool cc) {
     gpsCount         = org.gpsCount;
     hbCount          = org.hbCount;
 	smCount          = org.smCount;
+	magCount         = org.magCount;
 	sid              = org.sid;
 	cid              = org.cid;
 	hbSid			 = org.hbSid;
@@ -232,6 +241,41 @@ double* PixhawkAP::rollPitchYaw(double x, double y, double z, bool inDegrees, bo
 	return S3;
 }
 
+//------------------------------------------------------------------------------------
+// Records Mavlink messages (ID and timestamp)
+//------------------------------------------------------------------------------------
+
+void PixhawkAP::recordMessage(uint8_t msgid, bool sending) {
+	recordMutex.lock();
+	if (!printedMessageIDs) {
+		if (messageIDsIndex < 10000) {
+			messageTSs[messageIDsIndex] = (int)((getComputerTime() - messageIDStartTime) * 1000); // timestamp
+			messageIDs[messageIDsIndex] = msgid; // msg id
+			messageDRs[messageIDsIndex] = sending; // sending/receiving
+			messageIDsIndex++;
+		} else {
+			ofstream output;
+			char filename[20];
+			sprintf(filename, "COM%d_messageIDs.csv", portNum);
+			output.open(filename, ios::trunc);
+			if (output.is_open()) {
+				// print messages
+				for (int i = 0; i < messageIDsIndex; i++) {
+					if (messageDRs[i]) {
+						output << "COM" << portNum << ",SND," << messageTSs[i] << "," << (int)messageIDs[i] << "\n";
+					} else {
+						output << "COM" << portNum << ",RCV," << messageTSs[i] << "," << (int)messageIDs[i] << "\n";
+					}
+				}
+				printedMessageIDs = true;
+				cout << "Message traffic successfully saved to '" << filename << "'" << endl;
+				output.close();
+			}
+		}
+	}
+	recordMutex.unlock();
+}
+
 //------------------------------------------------------------------------------
 // Getter methods
 //------------------------------------------------------------------------------
@@ -338,8 +382,27 @@ void PixhawkAP::sendHeartbeat() {
 		// set mode to HIL
 
 		if (++smCount >= 5) smCount = 0; else return; // control set_mode refresh rate
-		if (hbBaseMode != 189) {                      // set mode to HIL if not already
-			cout << "Sent set mode message." << endl;
+		//cout << "Base mode: " << (int)hbBaseMode << endl;
+		if (hbBaseMode!=189)
+			cout << "Base mode is: " << (int)hbBaseMode << " | Attempting to set to: ";
+		if (hbBaseMode == 0) {
+			// set to 65
+			cout << 65 << endl;
+			mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 65, 65536);
+			sendMessage(&msg2);
+		} else if (hbBaseMode == 65) {
+			// set to 97
+			cout << 97 << endl;
+			mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 97, 65536);
+			sendMessage(&msg2);
+		} else if (hbBaseMode == 97) {
+			// set to 225
+			cout << 225 << endl;
+			mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 225, 65536);
+			sendMessage(&msg2);
+		} else if (hbBaseMode == 225) {
+			// set to 189
+			cout << 189 << endl;
 			mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 189, 262144);
 			sendMessage(&msg2);
 		}
@@ -370,12 +433,47 @@ void PixhawkAP::sendHilSensor() {
 	double psiR   = uav->getHeadingR();
 	//cout << "roll: " << phiR << " | pitch: " << thetaR << " | yaw: " << psiR << endl;
 
+	// calculate magvar
+	magCount++;
+	if (magCount > 500 || magCount == 0) { // only udpated when position has significantly changed
+
+		if (magCount == 0)
+			magCount = rand() % 500; // start randomly between 0 - 499
+		else
+			magCount = 0;
+
+		// get day, mth, yr
+		time_t t = time(NULL);
+		tm* timePtr = localtime(&t);
+		int yy, mm, dd;
+		yy = timePtr->tm_year - 100;
+		mm = timePtr->tm_mon + 1;
+		dd = timePtr->tm_mday;
+
+		// get mag
+		double field[6];
+		double latR = uav->getLatitude()*PI / 180;
+		double lonR = uav->getLongitude()*PI / 180;
+		double altKm = uav->getAltitudeM() / 1000;
+		calc_magvar(latR, lonR, altKm, yymmdd_to_julian_days(yy, mm, dd), field);
+		double magnitude = sqrt(field[3] * field[3] + field[4] * field[4] + field[5] * field[5]);
+
+		// set magvar
+		xmag = field[5] / magnitude;
+		ymag = field[4] / magnitude;
+		zmag = field[3] / magnitude;
+	}
+
 	// Static north pointing unit vector of magnetic field in the Inertial (NED) Frame 15K ft MSL
 	// over USAFA Airfield on 12/29/2015 (dec/inc of 8.3085/65.7404 degs respectively)
-	float xmag = 0.902124413;
-	float ymag = 0.131742403;
-	float zmag = 0.410871614;
+	//float xmag = 0.902124413;
+	//float ymag = 0.131742403;
+	//float zmag = 0.410871614;
 
+	float xmag = 0.860429164;
+	float ymag = 0.054813282;
+	float zmag = 0.383757034;
+	
 	// Rotate vector
 	double* reverseRotation = rollPitchYaw(xmag, ymag, zmag, false, true, phiR, thetaR, psiR);
 	xmag = reverseRotation[0];
@@ -473,6 +571,8 @@ void PixhawkAP::sendHilGps() {
 
 // Dynamic Waypoint Following (DWF)
 void PixhawkAP::sendDynamicWaypoint() {
+	if (hbBaseMode != 189) return; // only enable DWF when in HIL mode 189
+
 	/*
 	 ___________________________________________________
 	| Sequence Diagram for waypoint updates:            |
@@ -500,20 +600,22 @@ void PixhawkAP::sendDynamicWaypoint() {
 		sendMessage(&msg3);
 		break;
 	case AWAIT_REQ:
-		if (msnReqRcvd)
+		if (msnReqRcvd) {
 			currState = SEND_ITEM;
-		else if (++msnTimeout >= 25) // wait some arbitrary time before re-sending message
+		} else if (++msnTimeout >= 250) { // wait some arbitrary time before re-sending message
 			currState = SEND_COUNT;
+		}
 		break;
 	case SEND_ITEM:
 		currState = AWAIT_ACK;
 		msnAckRcvd = false;
 		msnTimeout = 0;
 		// check for RTL mode
-		if (hbCustomMode == 84148224) {
+		if (dwTooFar) {
 			Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
 			if (uav == 0) return;
-			uav->getPositionLLA(&dwLat, &dwLon, &dwAlt);	
+			uav->getPositionLLA(&dwLat, &dwLon, &dwAlt);
+			dwTooFar = false;
 		}
 		// send MISSION_ITEM (39)
 		//cout << "\rlat: " << dwLat << "\tlon: " << dwLon << "\talt: " << dwAlt << "                                            ";
@@ -524,12 +626,14 @@ void PixhawkAP::sendDynamicWaypoint() {
 		if (msnAckRcvd) {
 			currState = INTERMISSION;
 			msnTimeout = 0;
-		} else if (++msnTimeout >= 25) // wait before re-sending
+		} else if (++msnTimeout >= 250) { // wait before re-sending
 			currState = SEND_ITEM;
+		}
 		break;
 	case INTERMISSION:
-		if (++msnTimeout >= 250) // wait a few seconds between dynamic waypoint updates
+		if (++msnTimeout >= 250) { // wait a few seconds between dynamic waypoint updates
 			currState = SEND_COUNT;
+		}
 		break;
 	}
 }
@@ -586,11 +690,12 @@ void PixhawkAP::dynamics(const LCreal dt) {
 	dm->setControlStickRollInput(hcRollCtrl);
 	dm->setRudderPedalInput(hcYawCtrl);
 	dm->setThrottles(&hcThrottleCtrl, 1);
+	//cout << "\rpitch: " << hcPitchCtrl << " | roll: " << hcRollCtrl << " | yaw: " << hcYawCtrl << " | throttle: " << hcThrottleCtrl << "                             ";
 
 	// push UAV attitude/position/etc to PX4
 	updatePX4();
 
-	BaseClass::updateData(dt);
+	BaseClass::dynamics(dt);
 }
 
 //------------------------------------------------------------------------------
@@ -602,14 +707,20 @@ bool PixhawkAP::connectToPixhawk() {
 		cout << "Failed to open port (" << portNum << ") :(" << endl;
 		return false;
 	}
-	else {
-
-	}
 	cout << "Connected to PX4 over COM port " << portNum << "." << endl;
 	return true;
 }
 
+bool PixhawkAP::sendBytes(char* bytes) {
+	sendMutex.lock();
+	int bytesSent = serial.SendData(bytes, strlen(bytes));
+	sendMutex.unlock();
+	return bytesSent > 0;
+}
+
 bool PixhawkAP::sendMessage(mavlink_message_t* msg) {
+	recordMessage(msg->msgid, true);
+	//cout << "message id: "<< (int)msg->msgid << endl;
 	sendMutex.lock();
 	uint8_t buff[265];
 	int buffLen = mavlink_msg_to_send_buffer(buff, msg);
@@ -666,6 +777,11 @@ unsigned long ReceiveThread::userFunc()
 		mavlink_status_t mavStatus;
 		char text[MAVLINK_MSG_ID_STATUSTEXT_LEN + 1]; // used by STATUSTEXT messages
 
+		int msgids[500];
+		for (int i = 0; i < 500; i++) {
+			msgids[i] = 0;
+		}
+
 		// buffer variables
 		int bufferSize = 64;
 		int bytesRead = 0;                            // index for lpBuffer
@@ -678,6 +794,7 @@ unsigned long ReceiveThread::userFunc()
 					parent->setSerialReadData(lpBuffer, bufferSize); // refill buffer
 					while (bytesRead < bufferSize) {
 						if (mavlink_parse_char(1, lpBuffer[bytesRead++], &rcvMsg, &mavStatus)) { // build msg
+							parent->recordMessage(rcvMsg.msgid, false);
 							// Process mavlink messages
 							switch (rcvMsg.msgid) {
 							case MAVLINK_MSG_ID_HEARTBEAT:
@@ -727,12 +844,26 @@ unsigned long ReceiveThread::userFunc()
 								parent->setHcNavMode(mavlink_msg_hil_controls_get_nav_mode(&rcvMsg));
 								break;
 							case MAVLINK_MSG_ID_STATUSTEXT:
-								if (strcmp(parent->getStatustexts(), "on") == 0) {
+								//if (strcmp(parent->getStatustexts(), "on") == 0) {
 									mavlink_msg_statustext_get_text(&rcvMsg, (char*)&text);
-									cout << "\nStatus Text: " << text << endl;
-								}
+									cout << "\nStatus Text(" << parent->getOwnship()->getID() << "): " << text << endl;
+
+									if (strstr(text, "Waypoint too far") != nullptr) {
+										parent->setDwTooFar(true);
+									}
+								//}
 								break;
 							} // end switch
+
+							//// prints out messages received
+							//msgids[(int)rcvMsg.msgid] = (int)rcvMsg.msgid;
+							//cout << "\r";
+							//for (int i = 0; i < 260; i++) {
+							//	if (msgids[i] != 0)
+							//		cout << msgids[i] << "\t";
+							//}
+							//cout << "                            ";
+
 						} // end if
 					} // end while true
 					bytesRead = 0; // reset the lpBuffer index

@@ -141,14 +141,14 @@ namespace Eaagles {
 				} else {
 					timeSlots[sleepTime]++;
 				}
-				if (min < -5000) { // check for divergence from real-time
-					cout << "ERROR: failed to achieve real-time execution." << endl;
-					_getch();
-					exit(0);
-				}
+				//if (min < -5000) { // check for divergence from real-time
+				//	cout << "ERROR: failed to achieve real-time execution." << endl;
+				//	_getch();
+				//	exit(0);
+				//}
 				if (refresh++ >= 60) { // print to console once every 60 iterations
 					refresh = 0;
-					cout << "\rElapsed Time: " << (int) elapsedTime << "s WAIT TIMES: min(" << min << ") max(" << max << ") cur(" << sleepTime << ")          ";
+					//cout << "\rReal-time: " << elapsedTime << "s Sim-time: " << simTime << "s WAIT TIMES: min(" << min << ") max(" << max << ") cur(" << sleepTime << ")          ";
 				}
 
 				// wait for the next frame
@@ -157,18 +157,26 @@ namespace Eaagles {
 			}
 			cout << "\nSimulation successfully ran for 10 minutes." << endl;
 
-			// "append to" file
-			ofstream output;
-			output.open("sim-results.csv", ios::trunc);
-
-			if (output.is_open()) {
-				for (int i = 0; i < 22; i++) {
-					output << i-1 << "," << timeSlots[i] << "\n";
+			bool done = false;
+			while (!done) {
+				// "append to" file
+				ofstream output;
+				output.open("sim-results.csv", ios::trunc);
+				if (output.is_open()) {
+					for (int i = 0; i < 22; i++) {
+						output << i - 1 << "," << timeSlots[i] << "\n";
+					}
+					output.close();
+					cout << "Results successfully written to file 'sim-results.csv'." << endl;
+					done = true;
+				} else {
+					cout << "ERROR: results not written to 'sim-results.csv'. Please check file is not open by another program. Would you like to try again (y/n)?" << endl;
+					char input = _getch();
+					if (input != 'y' && input != 'Y') {
+						done = true;
+						cout << "File not written to." << endl;
+					}
 				}
-				output.close();
-				cout << "Results successfully written to file 'sim-results.csv'." << endl;
-			} else {
-				cout << "ERROR: results not written to file, 'sim-results.csv' could not be opened." << endl;
 			}
 		}
 	} // End Swarms namespace
