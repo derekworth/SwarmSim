@@ -48,6 +48,9 @@
     <ClInclude Include="..\..\pixhawkHIL\SerialClass.h">
       <Filter>CPP Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\pixhawkHIL\coremag.hxx">
+      <Filter>CPP Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\pixhawkHIL\Factory.cpp">
@@ -75,6 +78,9 @@
       <Filter>CPP Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\pixhawkHIL\SerialClass.cpp">
+      <Filter>CPP Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\pixhawkHIL\coremag.cxx">
       <Filter>CPP Files</Filter>
     </ClCompile>
   </ItemGroup>

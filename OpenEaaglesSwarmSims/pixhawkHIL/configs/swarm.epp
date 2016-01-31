@@ -7,6 +7,12 @@
 		// flying over USAFA Airfield (KAFF)
 		latitude: 39.0084648
 		longitude: -104.8887177
+
+		numTcThreads: 5
+		numBgThreads: 3
+		enableTimingStats: false
+		printTimingStats: false
+
 		players: {
 
 			UAV_N1: ( UAV
@@ -134,22 +140,43 @@
 				initAlt: ( Feet 15000 )
 				initHeading: ( Degrees 315 )
 				initXPos: ( NauticalMiles 0.0 )
-				initYPos: ( NauticalMiles 0.0 )
+				initYPos: ( NauticalMiles 1.0 )
 				components: {
 					dynamicsModel: ( JSBSimModel
 						rootDir: "../shared/data/JSBSim/"
 						model: "Rascal"
 					)
 					pilot: ( PixhawkAP
-						portNum: 9
+						portNum: 5
 						mode: "swarm"
-						statustexts: "off"
+						statustexts: "on"
 					)
-					oca: ( OnboardControlAgent
-						desiredSeparation: 2000
-					)
+					oca: ( OnboardControlAgent )
 				}
 			) // End of UAV_P1
+
+			//UAV_P2: ( UAV 
+			//	id: 19
+			//	type: "F-16"
+			//	initVelocity: 41
+			//	side: blue
+			//	initAlt: ( Feet 15000 )
+			//	initHeading: ( Degrees 315 )
+			//	initXPos: ( NauticalMiles 1.0 )
+			//	initYPos: ( NauticalMiles 0.0 )
+			//	components: {
+			//		dynamicsModel: ( JSBSimModel
+			//			rootDir: "../shared/data/JSBSim/"
+			//			model: "Rascal"
+			//		)
+			//		pilot: ( PixhawkAP
+			//			portNum: 9
+			//			mode: "swarm"
+			//			statustexts: "on"
+			//		)
+			//		oca: ( OnboardControlAgent )
+			//	}
+			//) // End of UAV_P1
 
 		} // End of players
 	) // End of Simulation

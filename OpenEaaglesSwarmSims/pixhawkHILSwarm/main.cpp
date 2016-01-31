@@ -100,9 +100,9 @@ namespace Eaagles {
 			station->tcFrame( static_cast<LCreal>(1.0/static_cast<double>(station->getTimeCriticalRate())) );
 			
 			// Create the Time Critical Thread
-			//station->createTimeCriticalProcess();
+			station->createTimeCriticalProcess();
 			// short pause to allow os to startup thread
-			//lcSleep(2000);
+			lcSleep(2000);
 			
 			// Calc delta time for background thread
 			double dt = 1.0/static_cast<double>(bgRate);
@@ -112,71 +112,21 @@ namespace Eaagles {
 			double startTime = getComputerTime(); // Time of day (sec) run started
 
 			cout << "Simulation running..." << endl;
-			int min = 20;
-			int max = 0;
-			int refresh = 0; // refresh wait time status every 60 sim updates
-			int timeSlots[22]; // Holds count for values -5000 to +20
-			for (int i = 0; i < 22; i++) {
-				timeSlots[i] = 0;
-			}
-			double elapsedTime = 0; // in seconds
-			while (elapsedTime < 600) { // runs for 10 minutes
+			
+			while (true) { // runs for 10 minutes
 				// Update background thread
 				station->updateData(static_cast<LCreal>(dt));
-				// Update time-critical thread
-				station->updateTC(static_cast<LCreal>(dt));
 			
 				simTime += dt;                      // time of next frame
 				double timeNow = getComputerTime(); // time now
 			
-				elapsedTime = timeNow - startTime;
+				double elapsedTime = timeNow - startTime;
 				double nextFrameStart = simTime - elapsedTime;
 				int sleepTime = static_cast<int>(nextFrameStart*1000.0);
-
-				// print wait times to console
-				if (sleepTime < min) { min = sleepTime; }
-				if (sleepTime > max) { max = sleepTime; }
-				if (sleepTime < 0) {
-					timeSlots[0]++;
-				} else {
-					timeSlots[sleepTime]++;
-				}
-				//if (min < -5000) { // check for divergence from real-time
-				//	cout << "ERROR: failed to achieve real-time execution." << endl;
-				//	_getch();
-				//	exit(0);
-				//}
-				if (refresh++ >= 60) { // print to console once every 60 iterations
-					refresh = 0;
-					//cout << "\rReal-time: " << elapsedTime << "s Sim-time: " << simTime << "s WAIT TIMES: min(" << min << ") max(" << max << ") cur(" << sleepTime << ")          ";
-				}
 
 				// wait for the next frame
 				if (sleepTime > 0)
 					lcSleep(sleepTime);
-			}
-			cout << "\nSimulation successfully ran for 10 minutes." << endl;
-
-			bool done = false;
-			while (!done) {
-				// "append to" file
-				ofstream output;
-				output.open("sim-results.csv", ios::trunc);
-				if (output.is_open()) {
-					for (int i = 0; i < 22; i++) {
-						output << i - 1 << "," << timeSlots[i] << "\n";
-					}
-					output.close();
-					cout << "Results successfully written to file 'sim-results.csv'." << endl;
-					done = true;
-				} else {
-					cout << "ERROR: results not written to 'sim-results.csv'. Please check file is not open by another program. Would you like to try again (y/n)?" << endl;
-					char input = _getch();
-					if (input != 'y' && input != 'Y') {
-						done = true;
-						cout << "File not written to." << endl;
-					}
-				}
 			}
 		}
 	} // End Swarms namespace
@@ -189,5 +139,4 @@ namespace Eaagles {
 void main(int argc, char* argv[])
 {
 	Eaagles::Swarms::exec(argc, argv);
-	_getch();
 }

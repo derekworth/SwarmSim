@@ -300,9 +300,9 @@ void OnboardControlAgent::updateData(const LCreal dt) {
 		ap->setWaypoint(uavPosition + uav->getVelocity() * 500, uav->getAltitude());
 	} else {
 		ap->setWaypoint(uavPosition + nextWaypoint, -(uavPosition + nextWaypoint).z());
-		////========================================================================================
-		//// DRAW OCA CREATED WAYPOINT															  
-		////========================================================================================
+		//========================================================================================
+		// DRAW OCA CREATED WAYPOINTS															  
+		//========================================================================================
 		//Swarms::UAV* owner = dynamic_cast<Swarms::UAV*>(getOwnship());							  
 		//Basic::PairStream* players = owner->getSimulation()->getPlayers();						  
 		//																						  
@@ -328,7 +328,7 @@ void OnboardControlAgent::updateData(const LCreal dt) {
 		//	} else break;																		  
 		//	i++;																				  
 		//}																						  
-		////========================================================================================
+		//========================================================================================
 	}
 	
 	BaseClass::updateData(dt);

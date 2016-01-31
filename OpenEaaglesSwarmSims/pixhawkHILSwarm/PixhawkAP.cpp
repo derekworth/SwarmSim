@@ -61,16 +61,18 @@ EMPTY_SERIALIZER(PixhawkAP)
 //------------------------------------------------------------------------------------
 // Constructor
 //------------------------------------------------------------------------------------
-PixhawkAP::PixhawkAP() 
- : rcvThread(nullptr) {
+PixhawkAP::PixhawkAP() {
 	STANDARD_CONSTRUCTOR()
 
-	receiving        = false;
 	sentInitCmd      = false;
-    gpsCount         = rand() % 5;	// start randomly between 0 - 4
-    hbCount          = rand() % 50;	// start randomly between 0 - 49
-	smCount          = 0;
-	magCount         = -1;
+
+	hil_gps_time     = 0;
+	hil_sensor_time  = 0;
+	heartbeat_time   = 0;
+	set_mode_time    = 0;
+	mag_time         = 0;
+	startTimeSet     = false;
+
 	sid              = 255;
 	cid              = 0;
 	hbSid			 = 0;
@@ -100,17 +102,22 @@ PixhawkAP::PixhawkAP()
 	msnItmSent       = false;
 	msnAckRcvd       = false;
 	msnTimeout       = 0;
+	msnTimeoutCount  = 0;
 	currState        = SEND_COUNT;
 	portNum          = 0;
 	mode = nullptr;
 	setMode(new Basic::String("nav"));
 	statustexts = nullptr;
 	setStatustexts(new Basic::String("off"));
-	// captures the IDs of upto 75000 mavlink messages (~4 minutes of heavy traffic)
 
 	messageIDStartTime = getComputerTime();
 	messageIDsIndex = 0;
 	printedMessageIDs = false;
+
+	// buffer variables
+	bufferSize = 128;
+	bytesRead = 0;                          // index for lpBuffer
+	lpBuffer = new char[bufferSize];        // holds incoming serial data
 }
 
 //------------------------------------------------------------------------------------
@@ -119,12 +126,15 @@ PixhawkAP::PixhawkAP()
 void PixhawkAP::copyData(const PixhawkAP& org, const bool cc) {
 	BaseClass::copyData(org);
 
-	receiving        = org.receiving;
 	sentInitCmd      = org.sentInitCmd;
-    gpsCount         = org.gpsCount;
-    hbCount          = org.hbCount;
-	smCount          = org.smCount;
-	magCount         = org.magCount;
+
+	hil_gps_time     = org.hil_gps_time;
+	hil_sensor_time  = org.hil_sensor_time;
+	heartbeat_time   = org.heartbeat_time;
+	set_mode_time    = org.set_mode_time;
+	mag_time         = org.mag_time;
+	startTimeSet     = org.startTimeSet;
+
 	sid              = org.sid;
 	cid              = org.cid;
 	hbSid			 = org.hbSid;
@@ -155,6 +165,7 @@ void PixhawkAP::copyData(const PixhawkAP& org, const bool cc) {
 	msnItmSent       = org.msnItmSent;
 	msnAckRcvd       = org.msnAckRcvd;
 	msnTimeout       = org.msnTimeout;
+	msnTimeoutCount  = org.msnTimeoutCount;
 	currState        = SEND_COUNT;
 
 	if(cc) {
@@ -172,25 +183,19 @@ void PixhawkAP::copyData(const PixhawkAP& org, const bool cc) {
 	statustexts = s;
 	if (s != 0) s->unref();
 
-	// We need to init this ourselves, so ...
-	if (rcvThread != nullptr) {
-		rcvThread->terminate();
-		rcvThread = nullptr;
-	}
+	bufferSize = org.bufferSize;
+	bytesRead = 0;                          // index for lpBuffer
+	lpBuffer = new char[bufferSize];        // holds incoming serial data
 }
 
 //------------------------------------------------------------------------------------
 // deleteData() -- delete this object's data
 //------------------------------------------------------------------------------------
 void PixhawkAP::deleteData() {
-	receiving = false;
 	serial.Close();
 	mode = nullptr;
 	statustexts = nullptr;
-	if (rcvThread != nullptr) {
-		rcvThread->terminate();
-		rcvThread = nullptr;
-	}
+	delete[] lpBuffer;
 }
 
 //------------------------------------------------------------------------------------
@@ -246,15 +251,17 @@ double* PixhawkAP::rollPitchYaw(double x, double y, double z, bool inDegrees, bo
 // Records Mavlink messages (ID and timestamp)
 //------------------------------------------------------------------------------------
 
-void PixhawkAP::recordMessage(uint8_t msgid, bool sending) {
+void PixhawkAP::recordMessage(uint8_t msgid, bool sending, int byteCnt) {
 	recordMutex.lock();
 	if (!printedMessageIDs) {
-		if (messageIDsIndex < 750) {
+		if (messageIDsIndex < 10000) {
 			messageTSs[messageIDsIndex] = (int)((getComputerTime() - messageIDStartTime) * 1000); // timestamp
 			messageIDs[messageIDsIndex] = msgid; // msg id
 			messageDRs[messageIDsIndex] = sending; // sending/receiving
+			messageBCs[messageIDsIndex] = byteCnt;
 			messageIDsIndex++;
 		} else {
+			cout << "MAVLINK MESSAGES RECORDED TO FILE" << endl;
 			ofstream output;
 			char filename[20];
 			sprintf(filename, "COM%d_messageIDs.csv", portNum);
@@ -263,9 +270,9 @@ void PixhawkAP::recordMessage(uint8_t msgid, bool sending) {
 				// print messages
 				for (int i = 0; i < messageIDsIndex; i++) {
 					if (messageDRs[i]) {
-						output << "COM" << portNum << ",SND," << messageTSs[i] << "," << (int)messageIDs[i] << "\n";
+						output << "COM" << portNum << ",SND," << messageTSs[i] << "," << (int)messageIDs[i] << "," << messageBCs[i] << "\n";
 					} else {
-						output << "COM" << portNum << ",RCV," << messageTSs[i] << "," << (int)messageIDs[i] << "\n";
+						output << "COM" << portNum << ",RCV," << messageTSs[i] << "," << (int)messageIDs[i] << "," << messageBCs[i] << "\n";
 					}
 				}
 				printedMessageIDs = true;
@@ -328,7 +335,6 @@ void PixhawkAP::setWaypoint(const osg::Vec3& posNED, const LCreal altMeters) {
 bool PixhawkAP::setSlotPortNum(const Basic::Number* const msg) {
 	bool ok = (msg != nullptr);
 	if (ok) setPortNum(msg->getInt());
-	// establish connection to Pixhawk over given port and startup receiver thread
 	return ok;
 }
 
@@ -357,7 +363,11 @@ bool PixhawkAP::setSlotStatustexts(const Basic::String* const msg) {
 //------------------------------------------------------------------------------
 
 // time (in usec) since program started
-uint64_t PixhawkAP::sinceSystemBoot() const {
+uint64_t PixhawkAP::sinceSystemBoot() {
+	if (!startTimeSet) {
+		startTimeSet = true;
+		startTime = std::chrono::high_resolution_clock::now(); // set start time of program execution
+	}
 	return chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - startTime).count();
 }
 
@@ -365,57 +375,47 @@ uint64_t PixhawkAP::sinceSystemBoot() const {
 // Send UAV simulation state (i.e. UAV position/attitude/velocity/etc.) to PX4
 //------------------------------------------------------------------------------
 
-// HEARTBEAT (0)
+// HEARTBEAT (0) at 1 Hz
 void PixhawkAP::sendHeartbeat() {
-	if (++hbCount >= 50) hbCount = 0; else return; // control heartbeat refresh rate
-
-	//if (hbSid == 0 && !sentInitCmd) {
-	//	// ask pixhawk to start communicating over mavlink
-	//	sendMutex.lock();
-	//	// "...sh /etc/init.d/rc.usb....." used to initiate communications
-	//	char* buff = "\x0d\x0d\x0d\x73\x68\x20\x2f\x65\x74\x63\x2f\x69\x6e\x69\x74\x2e\x64\x2f\x72\x63\x2e\x75\x73\x62\x0a\x0d\x0d\x0d\x00";
-	//	int bytesSent = serial.SendData(buff, 29);
-	//	sendMutex.unlock();
-	//	sentInitCmd = true;
-	//} else {
-		mavlink_msg_heartbeat_pack(sid, cid, &msg1, 6, 8, 192, 0, 4);
-		sendMessage(&msg1);
-		// set mode to HIL
-
-		if (++smCount >= 5) smCount = 0; else return; // control set_mode refresh rate
-		cout << "Base mode: " << (int)hbBaseMode << endl;
-		if (hbBaseMode!=189)
-			cout << "Base mode is: " << (int)hbBaseMode << " | Attempting to set to: ";
-		if (hbBaseMode == 0) {
-			// set to 65
-			cout << 65 << endl;
-			mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 65, 65536);
-			sendMessage(&msg2);
-		} else if (hbBaseMode == 65) {
-			// set to 97
-			cout << 97 << endl;
-			mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 97, 65536);
-			sendMessage(&msg2);
-		} else if (hbBaseMode == 97) {
-			// set to 225
-			cout << 225 << endl;
-			mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 225, 65536);
-			sendMessage(&msg2);
-		} else if (hbBaseMode == 225) {
-			// set to 189
-			cout << 189 << endl;
-			mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 189, 262144);
-			sendMessage(&msg2);
-		}
-	//}
+	mavlink_msg_heartbeat_pack(sid, cid, &msg1, 6, 8, 192, 0, 4);
+	sendMessage(&msg1);
+	//sendSetMode();
 }
 
-// HIL_SENSOR (107)
+// SET_MODE (11)
+void PixhawkAP::sendSetMode() {
+	if (hbBaseMode != 189) {
+		cout << "Base mode is: " << (int)hbBaseMode << " | Attempting to set to: ";
+	}
+
+	if (hbBaseMode == 0) {
+		// set to 65
+		cout << 65 << endl;
+		mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 65, 65536);
+		sendMessage(&msg2);
+	} else if (hbBaseMode == 65) {
+		// set to 97
+		cout << 97 << endl;
+		mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 97, 65536);
+		sendMessage(&msg2);
+	} else if (hbBaseMode == 97) {
+		// set to 225
+		cout << 225 << endl;
+		mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 225, 65536);
+		sendMessage(&msg2);
+	} else if (hbBaseMode == 225) {
+		// set to 189
+		cout << 189 << endl;
+		mavlink_msg_set_mode_pack(sid, cid, &msg2, 1, 189, 262144);
+		sendMessage(&msg2);
+	}
+}
+
+// HIL_SENSOR (107) at 50 Hz
 void PixhawkAP::sendHilSensor() {
-	// get UAV
 	UAV* uav = dynamic_cast<UAV*>(getOwnship());
 	if (uav == nullptr) return;
-	// get UAV's dynamics model
+
 	Eaagles::Dynamics::JSBSimModel* dm = dynamic_cast<Eaagles::Dynamics::JSBSimModel*>(uav->getDynamicsModel());
 	if (dm == nullptr) return;
 
@@ -434,47 +434,12 @@ void PixhawkAP::sendHilSensor() {
 	double psiR   = uav->getHeadingR();
 	//cout << "roll: " << phiR << " | pitch: " << thetaR << " | yaw: " << psiR << endl;
 
-	// calculate magvar
-	magCount++;
-	if (magCount > 500 || magCount == 0) { // only udpated when position has significantly changed
-
-		if (magCount == 0)
-			magCount = rand() % 500; // start randomly between 0 - 499
-		else
-			magCount = 0;
-
-		// get day, mth, yr
-		time_t t = time(NULL);
-		tm* timePtr = localtime(&t);
-		int yy, mm, dd;
-		yy = timePtr->tm_year - 100;
-		mm = timePtr->tm_mon + 1;
-		dd = timePtr->tm_mday;
-
-		// get mag
-		double field[6];
-		double latR = uav->getLatitude()*PI / 180;
-		double lonR = uav->getLongitude()*PI / 180;
-		double altKm = uav->getAltitudeM() / 1000;
-		calc_magvar(latR, lonR, altKm, yymmdd_to_julian_days(yy, mm, dd), field);
-		double magnitude = sqrt(field[3] * field[3] + field[4] * field[4] + field[5] * field[5]);
-
-		// set magvar
-		xmag = field[5] / magnitude;
-		ymag = field[4] / magnitude;
-		zmag = field[3] / magnitude;
-	}
-
 	// Static north pointing unit vector of magnetic field in the Inertial (NED) Frame 15K ft MSL
 	// over USAFA Airfield on 12/29/2015 (dec/inc of 8.3085/65.7404 degs respectively)
-	//float xmag = 0.902124413;
-	//float ymag = 0.131742403;
-	//float zmag = 0.410871614;
+	xmag = 0.902124413;
+	ymag = 0.131742403;
+	zmag = 0.410871614;
 
-	float xmag = 0.860429164;
-	float ymag = 0.054813282;
-	float zmag = 0.383757034;
-	
 	// Rotate vector
 	double* reverseRotation = rollPitchYaw(xmag, ymag, zmag, false, true, phiR, thetaR, psiR);
 	xmag = reverseRotation[0];
@@ -524,55 +489,92 @@ void PixhawkAP::sendHilSensor() {
 	sendMessage(&msg2);
 }
 
-// HIL_GPS (113)
-void PixhawkAP::sendHilGps() {
-	if (++gpsCount >= 5) gpsCount = 0; else return; // control refresh rate
-
+void PixhawkAP::updateMagValues() {
 	UAV* uav = dynamic_cast<UAV*>(getOwnship());
-	if (uav != nullptr) {
-		Eaagles::Dynamics::JSBSimModel* dm = dynamic_cast<Eaagles::Dynamics::JSBSimModel*>(uav->getDynamicsModel());
-		if (dm == nullptr) return;
+	if (uav == nullptr) return;
 
-		uint8_t  fix_type = 3;
-		double dlat, dlon, dalt;
-		uav->getPositionLLA(&dlat, &dlon, &dalt);
-		int32_t  lat = (int32_t)(dlat * 10000000);
-		int32_t  lon = (int32_t)(dlon * 10000000);
-		int32_t  alt = (int32_t)(dalt * 1000);
-		uint16_t eph = 30;
-		uint16_t epv = 60;
-		uint16_t vel = uav->getGroundSpeed() * 100;
-		int16_t  vn = uav->getVelocity().x() * 100;
-		int16_t  ve = uav->getVelocity().y() * 100;
-		int16_t  vd = uav->getVelocity().z() * 100;
-		
-		double   cog_signed = uav->getGroundTrackD();
-		if (cog_signed < 0) cog_signed = 360 + cog_signed; // convert from -180 thru 180 to 0 thru 360
-		uint16_t cog = cog_signed * 100;
+	// Static north pointing unit vector of magnetic field in the Inertial (NED) Frame 15K ft MSL
+	// over USAFA Airfield on 12/29/2015 (dec/inc of 8.3085/65.7404 degs respectively)
+	//float xmag = 0.902124413;
+	//float ymag = 0.131742403;
+	//float zmag = 0.410871614;
 
-		uint8_t  satellites_visible = 8;
+	//float xmag = 0.860429164;
+	//float ymag = 0.054813282;
+	//float zmag = 0.383757034;
 
-		mavlink_msg_hil_gps_pack(sid, cid, &msg2, sinceSystemBoot(),
-			fix_type,
-			lat,
-			lon,
-			alt,
-			eph,
-			epv,
-			vel,
-			vn,
-			ve,
-			vd,
-			cog,
-			satellites_visible);
+	// get day, mth, yr
+	time_t t = time(NULL);
+	tm* timePtr = localtime(&t);
+	int yy, mm, dd;
+	yy = timePtr->tm_year - 100;
+	mm = timePtr->tm_mon + 1;
+	dd = timePtr->tm_mday;
 
-		sendMessage(&msg2);
-	}
+	// get mag
+	double field[6];
+	double latR = uav->getLatitude()*PI / 180;
+	double lonR = uav->getLongitude()*PI / 180;
+	double altKm = uav->getAltitudeM() / 1000;
+	calc_magvar(latR, lonR, altKm, yymmdd_to_julian_days(yy, mm, dd), field);
+	double magnitude = sqrt(field[3] * field[3] + field[4] * field[4] + field[5] * field[5]);
+
+	// set magvar
+	xmag = field[5] / magnitude;
+	ymag = field[4] / magnitude;
+	zmag = field[3] / magnitude;
+}
+
+// HIL_GPS (113) at 10 Hz
+void PixhawkAP::sendHilGps() {
+	UAV* uav = dynamic_cast<UAV*>(getOwnship());
+	if (uav == nullptr) return;
+
+	Eaagles::Dynamics::JSBSimModel* dm = dynamic_cast<Eaagles::Dynamics::JSBSimModel*>(uav->getDynamicsModel());
+	if (dm == nullptr) return;
+
+	uint8_t  fix_type = 3;
+	double dlat, dlon, dalt;
+	uav->getPositionLLA(&dlat, &dlon, &dalt);
+	int32_t  lat = (int32_t)(dlat * 10000000);
+	int32_t  lon = (int32_t)(dlon * 10000000);
+	int32_t  alt = (int32_t)(dalt * 1000);
+	uint16_t eph = 30;
+	uint16_t epv = 60;
+	uint16_t vel = uav->getGroundSpeed() * 100;
+	int16_t  vn = uav->getVelocity().x() * 100;
+	int16_t  ve = uav->getVelocity().y() * 100;
+	int16_t  vd = uav->getVelocity().z() * 100;
+
+	double   cog_signed = uav->getGroundTrackD();
+	if (cog_signed < 0) cog_signed = 360 + cog_signed; // convert from -180 thru 180 to 0 thru 360
+	uint16_t cog = cog_signed * 100;
+
+	uint8_t  satellites_visible = 8;
+
+	mavlink_msg_hil_gps_pack(sid, cid, &msg2, sinceSystemBoot(),
+		fix_type,
+		lat,
+		lon,
+		alt,
+		eph,
+		epv,
+		vel,
+		vn,
+		ve,
+		vd,
+		cog,
+		satellites_visible);
+
+	sendMessage(&msg2);
 }
 
 // Dynamic Waypoint Following (DWF)
 void PixhawkAP::sendDynamicWaypoint() {
-	if (hbBaseMode != 189) return; // only enable DWF when in HIL mode 189
+	if (hbBaseMode != 189) {
+		cout << "UNABLE TO SEND DYNAMIC WAYPOINT!" << endl;
+		return; // only enable DWF when in HIL mode 189
+	}
 
 	/*
 	 ___________________________________________________
@@ -591,11 +593,13 @@ void PixhawkAP::sendDynamicWaypoint() {
 	|________________________|__________________________|
 
 	*/
+
 	switch (currState) {
 	case SEND_COUNT:
 		currState = AWAIT_REQ;
 		msnReqRcvd = false;
-		msnTimeout = 0;
+		msnTimeout = sinceSystemBoot() + 100000; // wait 100 ms before trying again
+		msnTimeoutCount = 0;
 		// send MISSION_COUNT (44)
 		mavlink_msg_mission_count_pack(sid, cid, &msg3, 1, 190, 1);
 		sendMessage(&msg3);
@@ -603,21 +607,20 @@ void PixhawkAP::sendDynamicWaypoint() {
 	case AWAIT_REQ:
 		if (msnReqRcvd) {
 			currState = SEND_ITEM;
-		} else if (++msnTimeout >= 250) { // wait some arbitrary time before re-sending message
+		} else if (msnTimeout < sinceSystemBoot()) {
 			currState = SEND_COUNT;
 		}
 		break;
 	case SEND_ITEM:
 		currState = AWAIT_ACK;
 		msnAckRcvd = false;
-		msnTimeout = 0;
+		msnTimeout = sinceSystemBoot() + 100000; // wait 100 ms sec before trying again
 		// check for RTL mode
-		//if (dwTooFar) {
-		//	Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
-		//	if (uav == 0) return;
-		//	uav->getPositionLLA(&dwLat, &dwLon, &dwAlt);
-		//	dwTooFar = false;
-		//}
+		if (hbCustomMode == 84148224) {
+			Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
+			if (uav == 0) return;
+			uav->getPositionLLA(&dwLat, &dwLon, &dwAlt);
+		}
 		// send MISSION_ITEM (39)
 		//cout << "\rlat: " << dwLat << "\tlon: " << dwLon << "\talt: " << dwAlt << "                                            ";
 		mavlink_msg_mission_item_pack(sid, cid, &msg3, 1, 190, 0, 0, 16, 1, 1, 0, 25, 0, 0, dwLat, dwLon, dwAlt);
@@ -626,13 +629,18 @@ void PixhawkAP::sendDynamicWaypoint() {
 	case AWAIT_ACK:
 		if (msnAckRcvd) {
 			currState = INTERMISSION;
-			msnTimeout = 0;
-		} else if (++msnTimeout >= 250) { // wait before re-sending
-			currState = SEND_ITEM;
+			msnTimeout = sinceSystemBoot() + 5000000; // wait 5 sec between dynamic waypoint updates
+		} else if (msnTimeout < sinceSystemBoot()) {
+			msnTimeoutCount++;
+			if (msnTimeoutCount < 5) { // retry to send item up to 5 times
+				currState = SEND_ITEM;
+			} else {
+				currState = SEND_COUNT;
+			}
 		}
 		break;
 	case INTERMISSION:
-		if (++msnTimeout >= 250) { // wait a few seconds between dynamic waypoint updates
+		if (msnTimeout < sinceSystemBoot()) {
 			currState = SEND_COUNT;
 		}
 		break;
@@ -642,10 +650,103 @@ void PixhawkAP::sendDynamicWaypoint() {
 void PixhawkAP::updatePX4() {
 	if (!isInitialized()) return;
 
-	sendHeartbeat();
-	sendHilSensor();
-	sendHilGps();
+	if (heartbeat_time <= sinceSystemBoot()) {
+		heartbeat_time += 1000000; // advance by 1 sec (1M usec) = 1 Hz
+		sendHeartbeat();
+	}
+
+	if (mag_time <= sinceSystemBoot()) {
+		mag_time += 5000000; // advance by 5 sec (5M usec) = 0.2 Hz
+		updateMagValues();
+	}
+
+	if (hil_sensor_time <= sinceSystemBoot()) {
+		hil_sensor_time += 20000; // advance by 20 ms (20K usec) = 50 Hz
+		sendHilSensor();
+	}
+
+	if (hil_gps_time <= sinceSystemBoot()) {
+		hil_gps_time += 100000; // advance by 100 ms (100K usec) = 10 Hz
+		sendHilGps();
+	}
+
 	sendDynamicWaypoint();
+}
+
+void PixhawkAP::receive() {
+	// receive serial data
+	if (isSerialOpen()) { // prevents read attempts to closed ports
+		while (getSerialDataWaiting() > bufferSize) { // wait until we have enough data to fill buffer
+			setSerialReadData(lpBuffer, bufferSize); // refill buffer
+			while (bytesRead < bufferSize) {
+				if (mavlink_parse_char(1, lpBuffer[bytesRead++], &rcvMsg, &mavStatus)) { // build msg
+					recordMessage(rcvMsg.msgid, false, rcvMsg.len+8); // false = receiving
+					// Process mavlink messages
+					
+					switch (rcvMsg.msgid) {
+					case MAVLINK_MSG_ID_HEARTBEAT:
+						//cout << "PX4 Heartbeat = type: " << (int)mavlink_msg_heartbeat_get_type(&rcvMsg) <<
+						//	" | autopilot: " << (int)mavlink_msg_heartbeat_get_autopilot(&rcvMsg) <<
+						//	" | base_mode: " << (int)mavlink_msg_heartbeat_get_base_mode(&rcvMsg) <<
+						//	" | custom_mode: " << (int)mavlink_msg_heartbeat_get_custom_mode(&rcvMsg) <<
+						//	" | system_status: " << (int)mavlink_msg_heartbeat_get_system_status(&rcvMsg) <<
+						//	" | mavlink_version: " << (int)mavlink_msg_heartbeat_get_mavlink_version(&rcvMsg) << endl;
+						setHbSid(rcvMsg.sysid);
+						setHbCid(rcvMsg.compid);
+						setHbType(mavlink_msg_heartbeat_get_type(&rcvMsg));
+						setHbAutopilot(mavlink_msg_heartbeat_get_autopilot(&rcvMsg));
+						setHbBaseMode(mavlink_msg_heartbeat_get_base_mode(&rcvMsg));
+						setHbCustomMode(mavlink_msg_heartbeat_get_custom_mode(&rcvMsg));
+						setHbSystemStatus(mavlink_msg_heartbeat_get_system_status(&rcvMsg));
+						setHbMavlinkVersion(mavlink_msg_heartbeat_get_mavlink_version(&rcvMsg));
+						break;
+					case MAVLINK_MSG_ID_MISSION_ITEM:
+						setMiLat(mavlink_msg_mission_item_get_x(&rcvMsg));
+						setMiLon(mavlink_msg_mission_item_get_y(&rcvMsg));
+						setMiAlt(mavlink_msg_mission_item_get_z(&rcvMsg));
+						break;
+					case MAVLINK_MSG_ID_MISSION_REQUEST:
+						if (mavlink_msg_mission_request_get_seq(&rcvMsg) == 0 &&
+							mavlink_msg_mission_request_get_target_system(&rcvMsg) == 255 &&
+							mavlink_msg_mission_request_get_target_component(&rcvMsg) == 0) {
+							setMsnReqRcvd(true);
+						}
+						break;
+					case MAVLINK_MSG_ID_MISSION_COUNT:
+						setMcCnt(mavlink_msg_mission_count_get_count(&rcvMsg));
+						break;
+					case MAVLINK_MSG_ID_MISSION_ACK:
+						if (mavlink_msg_mission_ack_get_type(&rcvMsg) == 0 &&
+							mavlink_msg_mission_ack_get_target_system(&rcvMsg) == 255 &&
+							mavlink_msg_mission_ack_get_target_component(&rcvMsg) == 0) {
+							setMsnAckRcvd(true);
+						}
+						break;
+					case MAVLINK_MSG_ID_HIL_CONTROLS:
+						setHcRollCtrl(mavlink_msg_hil_controls_get_roll_ailerons(&rcvMsg));
+						setHcPitchCtrl(-mavlink_msg_hil_controls_get_pitch_elevator(&rcvMsg));
+						setHcYawCtrl(mavlink_msg_hil_controls_get_yaw_rudder(&rcvMsg));
+						setHcThrottleCtrl(mavlink_msg_hil_controls_get_throttle(&rcvMsg));
+						setHcSysMode(mavlink_msg_hil_controls_get_mode(&rcvMsg));
+						setHcNavMode(mavlink_msg_hil_controls_get_nav_mode(&rcvMsg));
+						//cout << "\rroll/pitch/yaw =\t" << hcRollCtrl << "\t" << hcPitchCtrl << "\t" << hcYawCtrl << "                                                   ";
+						break;
+					case MAVLINK_MSG_ID_STATUSTEXT:
+						if (strcmp(getStatustexts(), "on") == 0) {
+							mavlink_msg_statustext_get_text(&rcvMsg, (char*)&text);
+							cout << "\nStatus Text(" << getOwnship()->getID() << "): " << text << endl;
+						}
+						break;
+					} // end switch
+				} // end if
+			} // end while true
+			bytesRead = 0; // reset the lpBuffer index
+		}
+	} else {
+		cout << "ERROR: serial port not connected, failure to connect to Pixhawk" << endl;
+		_getch();
+		exit(0);
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -661,19 +762,8 @@ void PixhawkAP::dynamics(const LCreal dt) {
 			cout << "ERROR: failed to establish connection to PX4." << endl;
 			_getch();
 			exit(0);
-		} else {
-			startTime = std::chrono::high_resolution_clock::now(); // set start time of program execution
 		}
 	}
-	// start receiving thread if not already
-	if (rcvThread == nullptr) {
-		if (!createReceivingThread()) { // attempt to start listening for mavlink msgs
-			cout << "ERROR: failed to start receiving thread." << endl;
-			_getch();
-			exit(0);
-		}
-	}
-	
 
 	// allow manual flight
 	if (mode == 0) return;
@@ -694,9 +784,10 @@ void PixhawkAP::dynamics(const LCreal dt) {
 	//cout << "\rpitch: " << hcPitchCtrl << " | roll: " << hcRollCtrl << " | yaw: " << hcYawCtrl << " | throttle: " << hcThrottleCtrl << "                             ";
 
 	// push UAV attitude/position/etc to PX4
+	receive();
 	updatePX4();
 
-	BaseClass::dynamics(dt);
+	BaseClass::updateData(dt);
 }
 
 //------------------------------------------------------------------------------
@@ -720,8 +811,7 @@ bool PixhawkAP::sendBytes(char* bytes) {
 }
 
 bool PixhawkAP::sendMessage(mavlink_message_t* msg) {
-	recordMessage(msg->msgid, true);
-	//cout << "message id: "<< (int)msg->msgid << endl;
+	recordMessage(msg->msgid, true, msg->len+8); // true = send
 	sendMutex.lock();
 	uint8_t buff[265];
 	int buffLen = mavlink_msg_to_send_buffer(buff, msg);
@@ -732,172 +822,11 @@ bool PixhawkAP::sendMessage(mavlink_message_t* msg) {
 }
 
 bool PixhawkAP::isInitialized() {
-	if (rcvThread == nullptr) {
-		cout << "ERROR: receive thread is NULL" << endl;
-		return false;
-	}
 	if (!serial.IsOpened()) {
 		cout << "ERROR: serial connection not open" << endl;
 		return false;
 	}
 	return true;
-}
-
-//==============================================================================
-// Thread that continuously receives messages from the PX4
-//==============================================================================
-class ReceiveThread : public Basic::ThreadSingleTask {
-	DECLARE_SUBCLASS(ReceiveThread, Basic::ThreadSingleTask)
-public:
-	ReceiveThread(Basic::Component* const parent, const LCreal priority);
-
-private:
-	virtual unsigned long userFunc();
-};
-
-IMPLEMENT_SUBCLASS(ReceiveThread, "ReceiveThread")
-EMPTY_SLOTTABLE(ReceiveThread)
-EMPTY_COPYDATA(ReceiveThread)
-EMPTY_DELETEDATA(ReceiveThread)
-EMPTY_SERIALIZER(ReceiveThread)
-
-ReceiveThread::ReceiveThread(Basic::Component* const parent, const LCreal priority)
-: Basic::ThreadSingleTask(parent, priority)
-{
-	STANDARD_CONSTRUCTOR()
-}
-
-unsigned long ReceiveThread::userFunc()
-{
-	PixhawkAP* parent = dynamic_cast<PixhawkAP*>(getParent());
-	if (parent != nullptr) {
-		
-		// mavlink variables
-		mavlink_message_t sndMsg;
-		mavlink_message_t rcvMsg;
-		mavlink_status_t mavStatus;
-		char text[MAVLINK_MSG_ID_STATUSTEXT_LEN + 1]; // used by STATUSTEXT messages
-
-		int msgids[500];
-		for (int i = 0; i < 500; i++) {
-			msgids[i] = 0;
-		}
-
-		// buffer variables
-		int bufferSize = 64;
-		int bytesRead = 0;                            // index for lpBuffer
-		char* lpBuffer = new char[bufferSize];        // holds incoming serial data
-
-		// continuously receive serial data
-		while (parent->isReceiving()) {
-			if (parent->isSerialOpen()) { // prevents read attempts to closed ports
-				if (parent->getSerialDataWaiting() > bufferSize) { // wait until we have enough data to fill buffer
-					parent->setSerialReadData(lpBuffer, bufferSize); // refill buffer
-					while (bytesRead < bufferSize) {
-						if (mavlink_parse_char(1, lpBuffer[bytesRead++], &rcvMsg, &mavStatus)) { // build msg
-							parent->recordMessage(rcvMsg.msgid, false);
-							// Process mavlink messages
-							switch (rcvMsg.msgid) {
-							case MAVLINK_MSG_ID_HEARTBEAT:
-								//cout << "PX4 Heartbeat = type: " << (int)mavlink_msg_heartbeat_get_type(&rcvMsg) <<
-								//	" | autopilot: " << (int)mavlink_msg_heartbeat_get_autopilot(&rcvMsg) <<
-								//	" | base_mode: " << (int)mavlink_msg_heartbeat_get_base_mode(&rcvMsg) <<
-								//	" | custom_mode: " << (int)mavlink_msg_heartbeat_get_custom_mode(&rcvMsg) <<
-								//	" | system_status: " << (int)mavlink_msg_heartbeat_get_system_status(&rcvMsg) <<
-								//	" | mavlink_version: " << (int)mavlink_msg_heartbeat_get_mavlink_version(&rcvMsg) << endl;
-								parent->setHbSid(rcvMsg.sysid);
-								parent->setHbCid(rcvMsg.compid);
-								parent->setHbType(mavlink_msg_heartbeat_get_type(&rcvMsg));
-								parent->setHbAutopilot(mavlink_msg_heartbeat_get_autopilot(&rcvMsg));
-								parent->setHbBaseMode(mavlink_msg_heartbeat_get_base_mode(&rcvMsg));
-								parent->setHbCustomMode(mavlink_msg_heartbeat_get_custom_mode(&rcvMsg));
-								parent->setHbSystemStatus(mavlink_msg_heartbeat_get_system_status(&rcvMsg));
-								parent->setHbMavlinkVersion(mavlink_msg_heartbeat_get_mavlink_version(&rcvMsg));
-								break;
-							case MAVLINK_MSG_ID_MISSION_ITEM:
-								parent->setMiLat(mavlink_msg_mission_item_get_x(&rcvMsg));
-								parent->setMiLon(mavlink_msg_mission_item_get_y(&rcvMsg));
-								parent->setMiAlt(mavlink_msg_mission_item_get_z(&rcvMsg));
-								break;
-							case MAVLINK_MSG_ID_MISSION_REQUEST:
-								if (mavlink_msg_mission_request_get_seq(&rcvMsg)              == 0 &&
-								    mavlink_msg_mission_request_get_target_system(&rcvMsg)    == 255 &&
-									mavlink_msg_mission_request_get_target_component(&rcvMsg) == 0) {
-									parent->setMsnReqRcvd(true);
-								}
-								break;
-							case MAVLINK_MSG_ID_MISSION_COUNT:
-								parent->setMcCnt(mavlink_msg_mission_count_get_count(&rcvMsg));
-								break;
-							case MAVLINK_MSG_ID_MISSION_ACK:
-								if (mavlink_msg_mission_ack_get_type(&rcvMsg)             == 0 &&
-								    mavlink_msg_mission_ack_get_target_system(&rcvMsg)    == 255 &&
-									mavlink_msg_mission_ack_get_target_component(&rcvMsg) == 0) {
-									parent->setMsnAckRcvd(true);
-								}
-								break;
-							case MAVLINK_MSG_ID_HIL_CONTROLS:
-								parent->setHcRollCtrl(mavlink_msg_hil_controls_get_roll_ailerons(&rcvMsg));
-								parent->setHcPitchCtrl(-mavlink_msg_hil_controls_get_pitch_elevator(&rcvMsg));
-								parent->setHcYawCtrl(mavlink_msg_hil_controls_get_yaw_rudder(&rcvMsg));
-								parent->setHcThrottleCtrl(mavlink_msg_hil_controls_get_throttle(&rcvMsg));
-								parent->setHcSysMode(mavlink_msg_hil_controls_get_mode(&rcvMsg));
-								parent->setHcNavMode(mavlink_msg_hil_controls_get_nav_mode(&rcvMsg));
-								break;
-							case MAVLINK_MSG_ID_STATUSTEXT:
-								//if (strcmp(parent->getStatustexts(), "on") == 0) {
-									mavlink_msg_statustext_get_text(&rcvMsg, (char*)&text);
-									cout << "\nStatus Text(" << parent->getOwnship()->getID() << "): " << text << endl;
-
-									if (strstr(text, "Waypoint too far") != nullptr || strstr(text, "RTL") != nullptr) {
-										parent->setDwTooFar(true);
-									}
-								//}
-								break;
-							} // end switch
-
-							//// prints out messages received
-							//msgids[(int)rcvMsg.msgid] = (int)rcvMsg.msgid;
-							//cout << "\r";
-							//for (int i = 0; i < 260; i++) {
-							//	if (msgids[i] != 0)
-							//		cout << msgids[i] << "\t";
-							//}
-							//cout << "                            ";
-
-						} // end if
-					} // end while true
-					bytesRead = 0; // reset the lpBuffer index
-				} else {
-					std::this_thread::yield(); // allows other threads to run if serial buffer is empty
-				}
-			} else {
-				cout << "ERROR: serial port not connected, failure to connect to Pixhawk" << endl;
-				break;
-			}
-		} // stop receiving only when program exits
-		delete[] lpBuffer;
-	}
-	return 0;
-}
-
-bool PixhawkAP::createReceivingThread() {
-	receiving = true; // allows the receiving thread to execute (controls its while loop)
-	if (rcvThread == nullptr) {
-		rcvThread = new ReceiveThread(this, 0.6);
-		rcvThread->unref(); // thread is a safe_ptr<>
-
-		bool ok = rcvThread->create();
-		if (!ok) {
-			rcvThread = nullptr;
-			if (isMessageEnabled(MSG_ERROR)) {
-				cerr << "PixhawkAP::createReceivingProcess(): ERROR, failed to create the receive thread!" << endl;
-			}
-		}
-	}
-	receiving = (rcvThread != nullptr);
-
-	return receiving;
 }
 
 } // end Swarms namespace

@@ -100,9 +100,9 @@ namespace Eaagles {
 			station->tcFrame( static_cast<LCreal>(1.0/static_cast<double>(station->getTimeCriticalRate())) );
 			
 			// Create the Time Critical Thread
-			//station->createTimeCriticalProcess();
+			station->createTimeCriticalProcess();
 			// short pause to allow os to startup thread
-			//lcSleep(2000);
+			lcSleep(2000);
 			
 			// Calc delta time for background thread
 			double dt = 1.0/static_cast<double>(bgRate);
@@ -112,9 +112,9 @@ namespace Eaagles {
 			double startTime = getComputerTime(); // Time of day (sec) run started
 
 			cout << "Simulation running..." << endl;
-			int min = 20;
-			int max = 0;
-			int refresh = 0; // refresh wait time status every 60 sim updates
+			//int min = 20;
+			//int max = 0;
+			//int refresh = 0; // refresh wait time status every 60 sim updates
 			//int timeSlots[22]; // Holds count for values -5000 to +20
 			//for (int i = 0; i < 22; i++) {
 			//	timeSlots[i] = 0;
@@ -124,7 +124,7 @@ namespace Eaagles {
 				// Update background thread
 				station->updateData(static_cast<LCreal>(dt));
 				// Update time-critical thread
-				station->updateTC(static_cast<LCreal>(dt));
+				//station->updateTC(static_cast<LCreal>(dt));
 			
 				simTime += dt;                      // time of next frame
 				double timeNow = getComputerTime(); // time now
@@ -134,8 +134,8 @@ namespace Eaagles {
 				int sleepTime = static_cast<int>(nextFrameStart*1000.0);
 
 				// print wait times to console
-				if (sleepTime < min) { min = sleepTime; }
-				if (sleepTime > max) { max = sleepTime; }
+				//if (sleepTime < min) { min = sleepTime; }
+				//if (sleepTime > max) { max = sleepTime; }
 				//if (sleepTime < 0) {
 				//	timeSlots[0]++;
 				//} else {
@@ -146,10 +146,10 @@ namespace Eaagles {
 				//	_getch();
 				//	exit(0);
 				//}
-				if (refresh++ >= 60) { // print to console once every 60 iterations
-					refresh = 0;
-					cout << "\rReal-time: " << (int)elapsedTime << " | sim-time: " << simTime << " | ratio: " << (int)elapsedTime / simTime << "                   ";
-				}
+				//if (refresh++ >= 60) { // print to console once every 60 iterations
+				//	refresh = 0;
+				//	cout << "\rReal-time: " << (int)elapsedTime << " | sim-time: " << simTime << " | ratio: " << (int)elapsedTime / simTime << "                   ";
+				//}
 
 				// wait for the next frame
 				if (sleepTime > 0)

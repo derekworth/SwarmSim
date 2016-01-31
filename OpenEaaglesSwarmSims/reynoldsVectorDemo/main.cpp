@@ -120,7 +120,7 @@ namespace Eaagles {
 				timeSlots[i] = 0;
 			}
 			double elapsedTime = 0; // in seconds
-			while (elapsedTime < 600) { // runs for 10 minutes
+			while (true) { // runs for 10 minutes
 				// Update background thread
 				station->updateData(static_cast<LCreal>(dt));
 				// Update time-critical thread

@@ -15,7 +15,6 @@
 #include "pixhawk\mavlink.h"
 #include "Serial.h"
 #include "windows.h"
-#include "openeaagles/basic/Thread.h"
 #include <fstream>  // used to write to file
 #include <chrono>   // used for runtime calculation in usec precision
 #include <mutex>
@@ -66,7 +65,6 @@ public:
 	int      getMsnTimeout()       const { return msnTimeout; }
 	int      getSerialDataWaiting() { return serial.ReadDataWaiting(); }
 	bool     isSerialOpen() { return serial.IsOpened(); }
-	bool     isReceiving() { return receiving; }
 
 	// setters
 	virtual void setWaypoint(const osg::Vec3& posNED, const LCreal altMeters);
@@ -97,16 +95,14 @@ public:
 	void setMsnItmSent(const bool mis)          { msnItmSent = mis; }
 	void setMsnAckRcvd(const bool mar)          { msnAckRcvd = mar; }
 	void setMsnTimeout(const int  mto)          { msnTimeout = mto; }
-	void setDwTooFar(bool tooFar)               { dwTooFar = tooFar; }
 
 	// utility methods
 	virtual bool sendMessage(mavlink_message_t* msg);
 	virtual bool sendBytes(char* msg);
-	virtual uint64_t sinceSystemBoot() const;
+	virtual uint64_t sinceSystemBoot();
 	bool isInitialized();
-	bool isDwTooFar() { return dwTooFar; }
 	double* rollPitchYaw(double x, double y, double z, bool inDegrees, bool reverse, double phi, double theta, double psi);
-	void recordMessage(uint8_t msgid, bool sending);
+	void recordMessage(uint8_t msgid, bool sending, int byteCnt);
 	
 	void setRollControl(double input)     { hcRollCtrl     = input; }
 	void setPitchControl(double input)    { hcPitchCtrl    = input; }
@@ -123,12 +119,14 @@ protected:
 	
 	void updatePX4();
 	void sendHeartbeat();
+	void sendSetMode();
 	void sendHilGps();
 	void sendHilSensor();
 	void sendDynamicWaypoint();
+	void updateMagValues();
+	void receive();
 
 private:
-	bool createReceivingThread();
 	bool connectToPixhawk();
 
 	// communications management attributes
@@ -136,18 +134,25 @@ private:
 	mutex sendMutex;
 	mutex recordMutex;
 	chrono::system_clock::time_point startTime;
-	Basic::safe_ptr<Basic::Thread> rcvThread;
+	bool startTimeSet;
 	mavlink_message_t msg1; // heartbeat
 	mavlink_message_t msg2; // set_mode, hil_sensor, hil_gps 
 	mavlink_message_t msg3; // mission_<item/request/request_list/count/ack>
-	bool receiving;
+	// receiving attributes
+	mavlink_message_t rcvMsg;
+	mavlink_status_t mavStatus;
+	char text[MAVLINK_MSG_ID_STATUSTEXT_LEN + 1];
+	int bufferSize;
+	int bytesRead;
+	char* lpBuffer;
+
 	bool sentInitCmd;
 	// used for synchronizing 'send' frequencies
-	int gpsCount; // gps count
-	int hbCount;  // heartbeat count
-	int dwCount;  // dynamic waypoint count
-	int smCount;  // set mode count
-	int magCount; // set mode count
+	uint64_t hil_gps_time;
+	uint64_t hil_sensor_time;
+	uint64_t heartbeat_time;
+	uint64_t set_mode_time;
+	uint64_t mag_time;
 
 	float xmag, ymag, zmag;
 
@@ -185,20 +190,21 @@ private:
 	double dwLon;
 	double dwAlt;
 	osg::Vec3 dwLLA;
-	bool dwTooFar = true;
 
 	// waypoint handshake attributes
 	bool msnCntSent;
 	bool msnReqRcvd;
 	bool msnItmSent;
 	bool msnAckRcvd;
-	int  msnTimeout;
+	uint64_t  msnTimeout;
+	int msnTimeoutCount;
 	MsnState currState;
 
 	// mavlink message tracking
 	int     messageTSs[10000]; // timestamps
 	uint8_t messageIDs[10000]; // IDs
 	bool    messageDRs[10000]; // directions (i.e. sending/receiving)
+	int     messageBCs[10000]; // byte count
 	int messageIDsIndex;
 	bool printedMessageIDs;
 	double messageIDStartTime; // in seconds

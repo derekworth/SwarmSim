@@ -1645,8 +1645,15 @@ outputEntityTypes: {
 
 	ownship: UAV_N1
 	simulation: ( Simulation
+
 		latitude: 39.0084648
 		longitude: -104.8887177
+
+		numTcThreads: 5
+		numBgThreads: 3
+		enableTimingStats: false
+		printTimingStats: false
+
 		players: {
 
 			UAV_N1: ( UAV
@@ -1748,6 +1755,7 @@ outputEntityTypes: {
 				}
 			)
 
+
             WP01: ( Player id: 4 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles 1.5 ) initAlt: ( Feet 14000 ) )
             WP02: ( Player id: 5 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.2 ) initYPos: ( NauticalMiles 1.1 ) initAlt: ( Feet 14300 ) )
             WP03: ( Player id: 6 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 2.1 ) initYPos: ( NauticalMiles 2.0 ) initAlt: ( Feet 14100 ) )
@@ -1759,10 +1767,11 @@ outputEntityTypes: {
             WP09: ( Player id: 12 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 1.5 ) initYPos: ( NauticalMiles -0.5 ) initAlt: ( Feet 14050 ) )
             WP10: ( Player id: 13 type: "M1A2" testYawRate: ( Degrees 5.0 ) initXPos: ( NauticalMiles 0.0 ) initYPos: ( NauticalMiles 0.0 ) initAlt: ( Feet 14250 ) )
 
-            //vect_A: ( Player id: 14 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) )
-            //vect_S: ( Player id: 15 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) )
-            //vect_C: ( Player id: 16 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) )
-			//vect_X: ( Player id: 17 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) )
+
+            vect_A: ( Player id: 14 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) )
+            vect_S: ( Player id: 15 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) )
+            vect_C: ( Player id: 16 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) )
+			vect_X: ( Player id: 17 type: "AttackHelicopter" testYawRate: ( Degrees 5.0 ) )
 
 			UAV_P1: ( UAV
 				id: 18
@@ -1772,7 +1781,7 @@ outputEntityTypes: {
 				initAlt: ( Feet 15000 )
 				initHeading: ( Degrees 315 )
 				initXPos: ( NauticalMiles 0.0 )
-				initYPos: ( NauticalMiles 2.0 )
+				initYPos: ( NauticalMiles 1.0 )
 				components: {
 					dynamicsModel: ( JSBSimModel
 						rootDir: "../shared/data/JSBSim/"
@@ -1781,35 +1790,12 @@ outputEntityTypes: {
 					pilot: ( PixhawkAP
 						portNum: 5
 						mode: "swarm"
-						statustexts: "off"
+						statustexts: "on"
 					)
 					oca: ( OnboardControlAgent )
 				}
 			)
-
-			UAV_P2: ( UAV
-				id: 19
-				type: "F-16"
-				initVelocity: 41
-				side: blue
-				initAlt: ( Feet 15000 )
-				initHeading: ( Degrees 315 )
-				initXPos: ( NauticalMiles 0.0 )
-				initYPos: ( NauticalMiles 2.0 )
-				components: {
-					dynamicsModel: ( JSBSimModel
-						rootDir: "../shared/data/JSBSim/"
-						model: "Rascal"
-					)
-					pilot: ( PixhawkAP
-						portNum: 9
-						mode: "swarm"
-						statustexts: "off"
-					)
-					oca: ( OnboardControlAgent )
-				}
-			)
-
+#line 181 "C:/Users/Derek/Documents/GitHub/SwarmSim/OpenEaaglesSwarmSims/pixhawkHIL/configs/swarm.epp"
 		}
 	)
 )
