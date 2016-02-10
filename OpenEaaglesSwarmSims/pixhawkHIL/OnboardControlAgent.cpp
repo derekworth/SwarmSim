@@ -50,12 +50,12 @@ OnboardControlAgent::OnboardControlAgent()
 {
 	STANDARD_CONSTRUCTOR()
 
-	sFactor    = 0.5;
+	startTime  = 0;
+	sFactor	   = 0.5;
 	aFactor    = 10.0;
 	cFactor    = 1.0;
 	commDist   = 27780; // measured in meters (15 Nautical Miles)
 	desiredSep = 1000;  // in meters
-	refreshCnt = rand() % refreshRate;
 }
 
 //------------------------------------------------------------------------------------
@@ -65,12 +65,12 @@ void OnboardControlAgent::copyData(const OnboardControlAgent& org, const bool)
 {
 	BaseClass::copyData(org);
 
+	startTime  = org.startTime;
 	sFactor    = org.sFactor;
 	aFactor    = org.aFactor;
 	cFactor    = org.cFactor;
 	commDist   = org.commDist;
 	desiredSep = org.desiredSep;
-	refreshCnt = rand() % refreshRate;
 }
 
 //------------------------------------------------------------------------------------
@@ -280,7 +280,8 @@ bool OnboardControlAgent::setSlotDesiredSeparation(const Basic::Distance* const 
 //------------------------------------------------------------------------------------
 
 void OnboardControlAgent::updateData(const LCreal dt) {
-	if (++refreshCnt >= refreshRate) refreshCnt = 0; else return; // Control DWF refresh rate
+	if (startTime > getComputerTime()) return;
+	startTime = getComputerTime() + 5; // control the refresh rate here (in seconds / update); set to +5 sec during HIL
 	
 	Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(getOwnship());
 	if (uav == nullptr) return;
@@ -300,34 +301,37 @@ void OnboardControlAgent::updateData(const LCreal dt) {
 		ap->setWaypoint(uavPosition + uav->getVelocity() * 500, uav->getAltitude());
 	} else {
 		ap->setWaypoint(uavPosition + nextWaypoint, -(uavPosition + nextWaypoint).z());
+
 		//========================================================================================
 		// DRAW OCA CREATED WAYPOINTS															  
 		//========================================================================================
-		Swarms::UAV* owner = dynamic_cast<Swarms::UAV*>(getOwnship());							  
-		Basic::PairStream* players = owner->getSimulation()->getPlayers();						  
-																								  
-		int i = 1;																				  
-		while(true) {
-			Basic::Pair* player = players->getPosition(i);										  
-			if(player != 0) {																	  
-				Simulation::Player* p = dynamic_cast<Simulation::Player*>(player->object());	  
-				switch (p->getID()) {
-				case 14: // vect_A
-					p->setPosition(uavPosition + aVec);
-					break;
-				case 15: // vect_S
-					p->setPosition(uavPosition + sVec);
-					break;
-				case 16: // vect_C
-					p->setPosition(uavPosition + cVec);
-					break;
-				case 17: // vect_X
-					p->setPosition(uavPosition + nextWaypoint);
-					break;
-				}																				  
-			} else break;																		  
-			i++;																				  
-		}																						  
+		if (false) { // set to true only while simulating one swarming UAV with Reynolds vectors
+			Swarms::UAV* owner = dynamic_cast<Swarms::UAV*>(getOwnship());
+			Basic::PairStream* players = owner->getSimulation()->getPlayers();
+
+			int i = 1;
+			while (true) {
+				Basic::Pair* player = players->getPosition(i);
+				if (player != 0) {
+					Simulation::Player* p = dynamic_cast<Simulation::Player*>(player->object());
+					switch (p->getID()) {
+					case 14: // vect_A
+						p->setPosition(uavPosition + aVec);
+						break;
+					case 15: // vect_S
+						p->setPosition(uavPosition + sVec);
+						break;
+					case 16: // vect_C
+						p->setPosition(uavPosition + cVec);
+						break;
+					case 17: // vect_X
+						p->setPosition(uavPosition + nextWaypoint);
+						break;
+					}
+				} else break;
+				i++;
+			}
+		}
 		//========================================================================================
 	}
 	

@@ -25,6 +25,7 @@
     <ClInclude Include="..\..\pixhawkHIL\SerialClass.h" />
     <ClInclude Include="..\..\pixhawkHIL\SimAP.h" />
     <ClInclude Include="..\..\pixhawkHIL\SwarmAutopilot.h" />
+    <ClInclude Include="..\..\pixhawkHIL\SwarmSimulation.h" />
     <ClInclude Include="..\..\pixhawkHIL\UAV.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
@@ -38,6 +39,7 @@
     <ClCompile Include="..\..\pixhawkHIL\SerialClass.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\SimAP.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\SwarmAutopilot.cpp" />
+    <ClCompile Include="..\..\pixhawkHIL\SwarmSimulation.cpp" />
     <ClCompile Include="..\..\pixhawkHIL\UAV.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

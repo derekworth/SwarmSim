@@ -29,7 +29,9 @@ BOOL CSerial::Open( int nPort, int nBaud )
 	char szComParams[50];
 	DCB dcb;
 
-	wsprintf( szPort, "COM%d", nPort );
+	wsprintf(szPort, "\\\\.\\COM%d", nPort);
+	// was: wsprintf(szPort, "COM%d", nPort);
+
 	m_hIDComDev = CreateFile( szPort, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL );
 	if( m_hIDComDev == NULL ) return( FALSE );
 

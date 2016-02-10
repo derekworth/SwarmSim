@@ -104,6 +104,7 @@ PixhawkAP::PixhawkAP() {
 	msnTimeout       = 0;
 	msnTimeoutCount  = 0;
 	currState        = SEND_COUNT;
+	newWaypointSet   = false;
 	portNum          = 0;
 	mode = nullptr;
 	setMode(new Basic::String("nav"));
@@ -167,6 +168,7 @@ void PixhawkAP::copyData(const PixhawkAP& org, const bool cc) {
 	msnTimeout       = org.msnTimeout;
 	msnTimeoutCount  = org.msnTimeoutCount;
 	currState        = SEND_COUNT;
+	newWaypointSet   = org.newWaypointSet;
 
 	if(cc) {
 		mode = nullptr;
@@ -263,7 +265,7 @@ void PixhawkAP::recordMessage(uint8_t msgid, bool sending, int byteCnt) {
 		} else {
 			cout << "MAVLINK MESSAGES RECORDED TO FILE" << endl;
 			ofstream output;
-			char filename[20];
+			char filename[25];
 			sprintf(filename, "COM%d_messageIDs.csv", portNum);
 			output.open(filename, ios::trunc);
 			if (output.is_open()) {
@@ -326,6 +328,7 @@ void PixhawkAP::setWaypoint(const osg::Vec3& posNED, const LCreal altMeters) {
 	}
 
 	dwAlt = altMeters;
+	newWaypointSet = true;
 }
 
 //------------------------------------------------------------------------------------
@@ -363,7 +366,7 @@ bool PixhawkAP::setSlotStatustexts(const Basic::String* const msg) {
 //------------------------------------------------------------------------------
 
 // time (in usec) since program started
-uint64_t PixhawkAP::sinceSystemBoot() {
+uint64_t PixhawkAP::usecSinceSystemBoot() {
 	if (!startTimeSet) {
 		startTimeSet = true;
 		startTime = std::chrono::high_resolution_clock::now(); // set start time of program execution
@@ -469,8 +472,8 @@ void PixhawkAP::sendHilSensor() {
 
 	//cout << "\rabs_pressure: " << abs_pressure << "\tdiff_pressure: " << diff_pressure << "\tpressure_alt: " << pressure_alt << "\ttemperature: " << temperature << "                          ";
 
-	// send HIL_SENSOR and HIL_GPS messages
-	mavlink_msg_hil_sensor_pack(sid, cid, &msg2, sinceSystemBoot(),
+	// send HIL_SENSOR message
+	mavlink_msg_hil_sensor_pack(sid, cid, &msg2, usecSinceSystemBoot(),
 		xacc,
 		yacc,
 		zacc,
@@ -552,7 +555,7 @@ void PixhawkAP::sendHilGps() {
 
 	uint8_t  satellites_visible = 8;
 
-	mavlink_msg_hil_gps_pack(sid, cid, &msg2, sinceSystemBoot(),
+	mavlink_msg_hil_gps_pack(sid, cid, &msg2, usecSinceSystemBoot(),
 		fix_type,
 		lat,
 		lon,
@@ -571,8 +574,11 @@ void PixhawkAP::sendHilGps() {
 
 // Dynamic Waypoint Following (DWF)
 void PixhawkAP::sendDynamicWaypoint() {
+	UAV* uav = dynamic_cast<UAV*>(getOwnship());
+	if (uav == nullptr) return;
+
 	if (hbBaseMode != 189) {
-		cout << "UNABLE TO SEND DYNAMIC WAYPOINT!" << endl;
+		cout << "(" << uav->getID() << ") UNABLE TO SEND DYNAMIC WAYPOINT!" << endl;
 		return; // only enable DWF when in HIL mode 189
 	}
 
@@ -598,7 +604,7 @@ void PixhawkAP::sendDynamicWaypoint() {
 	case SEND_COUNT:
 		currState = AWAIT_REQ;
 		msnReqRcvd = false;
-		msnTimeout = sinceSystemBoot() + 100000; // wait 100 ms before trying again
+		msnTimeout = usecSinceSystemBoot() + 250000; // wait 250 ms before trying again
 		msnTimeoutCount = 0;
 		// send MISSION_COUNT (44)
 		mavlink_msg_mission_count_pack(sid, cid, &msg3, 1, 190, 1);
@@ -607,14 +613,14 @@ void PixhawkAP::sendDynamicWaypoint() {
 	case AWAIT_REQ:
 		if (msnReqRcvd) {
 			currState = SEND_ITEM;
-		} else if (msnTimeout < sinceSystemBoot()) {
+		} else if (msnTimeout < usecSinceSystemBoot()) {
 			currState = SEND_COUNT;
 		}
 		break;
 	case SEND_ITEM:
 		currState = AWAIT_ACK;
 		msnAckRcvd = false;
-		msnTimeout = sinceSystemBoot() + 100000; // wait 100 ms sec before trying again
+		msnTimeout = usecSinceSystemBoot() + 250000; // wait 250 ms sec before trying again
 		// check for RTL mode
 		if (hbCustomMode == 84148224) {
 			Swarms::UAV* uav = dynamic_cast<Swarms::UAV*>(this->getOwnship());
@@ -628,49 +634,56 @@ void PixhawkAP::sendDynamicWaypoint() {
 		break;
 	case AWAIT_ACK:
 		if (msnAckRcvd) {
-			currState = INTERMISSION;
-			msnTimeout = sinceSystemBoot() + 5000000; // wait 5 sec between dynamic waypoint updates
-		} else if (msnTimeout < sinceSystemBoot()) {
-			msnTimeoutCount++;
-			if (msnTimeoutCount < 5) { // retry to send item up to 5 times
-				currState = SEND_ITEM;
-			} else {
-				currState = SEND_COUNT;
-			}
-		}
-		break;
-	case INTERMISSION:
-		if (msnTimeout < sinceSystemBoot()) {
 			currState = SEND_COUNT;
+			newWaypointSet = false;
+		} else if (msnTimeout < usecSinceSystemBoot()) {
+			//msnTimeoutCount++;
+			//if (msnTimeoutCount < 5) { // retry to send item up to 5 times
+			//	currState = SEND_ITEM;
+			//} else {
+				currState = SEND_COUNT;
+			//}
 		}
 		break;
+	//case INTERMISSION:
+	//	if (msnTimeout < usecSinceSystemBoot()) {
+	//		currState = SEND_COUNT;
+	//	}
+	//	break;
 	}
 }
 
 void PixhawkAP::updatePX4() {
 	if (!isInitialized()) return;
 
-	if (heartbeat_time <= sinceSystemBoot()) {
+	//uint64_t startOfDataPull = usecSinceSystemBoot();
+	//cout << "time elapsed: " << (int)(usecSinceSystemBoot() - startOfDataPull) << " usec\n";
+
+	if (heartbeat_time <= usecSinceSystemBoot()) {
 		heartbeat_time += 1000000; // advance by 1 sec (1M usec) = 1 Hz
 		sendHeartbeat();
 	}
 
-	if (mag_time <= sinceSystemBoot()) {
-		mag_time += 5000000; // advance by 5 sec (5M usec) = 0.2 Hz
-		updateMagValues();
-	}
+	//if (mag_time <= usecSinceSystemBoot()) {
+	//	mag_time += 5000000; // advance by 5 sec (5M usec) = 0.2 Hz
+	//	updateMagValues();
+	//}
 
-	if (hil_sensor_time <= sinceSystemBoot()) {
+
+	if (hil_sensor_time <= usecSinceSystemBoot()) {
 		hil_sensor_time += 20000; // advance by 20 ms (20K usec) = 50 Hz
 		sendHilSensor();
 	}
 
-	if (hil_gps_time <= sinceSystemBoot()) {
+	if (hil_gps_time <= usecSinceSystemBoot()) {
 		hil_gps_time += 100000; // advance by 100 ms (100K usec) = 10 Hz
 		sendHilGps();
 	}
 
-	sendDynamicWaypoint();
+	if (newWaypointSet) {
+		sendDynamicWaypoint();
+	}
+
 }
 
 void PixhawkAP::receive() {
@@ -678,7 +691,7 @@ void PixhawkAP::receive() {
 	if (isSerialOpen()) { // prevents read attempts to closed ports
 		while (getSerialDataWaiting() > bufferSize) { // wait until we have enough data to fill buffer
 			setSerialReadData(lpBuffer, bufferSize); // refill buffer
-			while (bytesRead < bufferSize) {
+			while (bytesRead < bufferSize) { // read one byte at a time
 				if (mavlink_parse_char(1, lpBuffer[bytesRead++], &rcvMsg, &mavStatus)) { // build msg
 					recordMessage(rcvMsg.msgid, false, rcvMsg.len+8); // false = receiving
 					// Process mavlink messages

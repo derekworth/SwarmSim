@@ -99,7 +99,7 @@ public:
 	// utility methods
 	virtual bool sendMessage(mavlink_message_t* msg);
 	virtual bool sendBytes(char* msg);
-	virtual uint64_t sinceSystemBoot();
+	virtual uint64_t usecSinceSystemBoot();
 	bool isInitialized();
 	double* rollPitchYaw(double x, double y, double z, bool inDegrees, bool reverse, double phi, double theta, double psi);
 	void recordMessage(uint8_t msgid, bool sending, int byteCnt);
@@ -199,6 +199,7 @@ private:
 	uint64_t  msnTimeout;
 	int msnTimeoutCount;
 	MsnState currState;
+	bool newWaypointSet;
 
 	// mavlink message tracking
 	int     messageTSs[10000]; // timestamps

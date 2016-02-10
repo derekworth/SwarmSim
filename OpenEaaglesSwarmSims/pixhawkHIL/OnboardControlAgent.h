@@ -53,13 +53,12 @@ public:
 	virtual bool setSlotDesiredSeparation(const Basic::Number* const msg);
 
 private:
+	double startTime;
 	double sFactor;
 	double aFactor;
 	double cFactor;
 	double commDist;   // in meters
 	double desiredSep; // in meters
-	int    refreshRate = 250;
-	int    refreshCnt;
 };
 
 }

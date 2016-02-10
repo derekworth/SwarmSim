@@ -9,6 +9,7 @@
 #include "SimAP.h"
 #include "PixhawkAP.h"
 #include "OnboardControlAgent.h"
+#include "SwarmSimulation.h"
 
 // class factories
 #include "openeaagles/basic/Factory.h"
@@ -42,6 +43,9 @@ namespace Eaagles {
 			}
 			if (std::strcmp(name, OnboardControlAgent::getFactoryName()) == 0) {
 				obj = new OnboardControlAgent();
+			}
+			if (std::strcmp(name, SwarmSimulation::getFactoryName()) == 0) {
+				obj = new SwarmSimulation();
 			}
 
 			// Framework libraries
