@@ -40,21 +40,22 @@ void SwarmSimulation::printTimingStats() {
 	//	f = 15;
 	//}
 
-	// values rounded down to nearest millisecond
-	int dt  = (int)ts->value();
-	int avg = (int)ts->mean();
-	int max = (int)ts->maxValue();
+	timeSlots[count++] = ts->value(); // update duration in milliseconds
+	//int avg = (int)ts->mean();
+	//int max = (int)ts->maxValue();
 
-	if (dt > 19) {
-		timeSlots[20]++; // greater than or equal to 20 ms
-	} else {
-		timeSlots[dt]++; // less than 20 ms
-	}
-	count++;
+	// Print time remaining for data collection
+	double time = (30000 - count) * 0.02 / 60;
+	int min = (int)time;
+	double sec = (time - min) * 60;
+	if (sec < 10)
+		cout << "\rSimulation running with " << getPlayers()->entries() - 13 << " swarming UAVs | time remaining of data capture: " << min << ":0" << (int)sec << "                                                       ";
+	else
+		cout << "\rSimulation running with " << getPlayers()->entries() - 13 << " swarming UAVs | time remaining of data capture: " << min << ":" << (int)sec << "                                                       ";
 
 	// save performance data to file
 	if (count >= 30000) {
-		cout << "\nSimulation successfully performed 50K updates." << std::endl;
+		cout << "\nSimulation successfully performed 30K updates." << std::endl;
 		
 		while (true) {
 			// "append to" file
@@ -62,7 +63,8 @@ void SwarmSimulation::printTimingStats() {
 			output.open("sim-update-durations.csv", ios::trunc);
 
 			if (output.is_open()) {
-				for (int i = 0; i < 21; i++) {
+				output << "Update,Duration (ms)\n";
+				for (int i = 0; i < 30000; i++) {
 					output << i + 1 << "," << timeSlots[i] << "\n";
 				}
 				output.close();
@@ -70,7 +72,7 @@ void SwarmSimulation::printTimingStats() {
 				break;
 			} else {
 				cout << "ERROR: results not written to file, 'sim-update-durations.csv' could not be opened." << endl;
-				cout << "Please check that file is not already open. Would you like to try again (y/n)?" << endl;
+				cout << "Please check that file is not currently open. Would you like to try again (y/n)?" << endl;
 				int input = _getch();
 				if (input != 'y' && input != 'Y') {
 					cout << "Simulation results not written to file." << endl;
@@ -79,16 +81,6 @@ void SwarmSimulation::printTimingStats() {
 			}
 		}
 	}
-
-	//std::cout << "simulation(" << c << "," << f << "): dt=" << ts->value() << ", ave=" << ts->mean() << ", max=" << ts->maxValue() << std::endl;
-	double time = (30000 - count) * 0.02 / 60;
-	int min = (int) time;
-	double sec = (time - min) * 60;
-	if (sec < 10)
-		cout << "\r" << getPlayers()->entries() - 13 << " UAVs | time remaining: " << min << ":0" << (int)sec << "                                                       ";
-	else
-		cout << "\r" << getPlayers()->entries() - 13 << " UAVs | time remaining: " << min << ":" << (int)sec << "                                                       ";
-	
 }
 
 } // End Swarms namespace

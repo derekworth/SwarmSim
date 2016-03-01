@@ -111,7 +111,7 @@ namespace Eaagles {
 			double simTime = 0.0;                 // Simulator time reference
 			double startTime = getComputerTime(); // Time of day (sec) run started
 
-			cout << "Simulation running..." << endl;
+			//cout << "Simulation running..." << endl;
 			
 			while (true) { // runs for 10 minutes
 				// Update background thread

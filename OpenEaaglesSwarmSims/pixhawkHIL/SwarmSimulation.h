@@ -20,7 +20,7 @@ protected:
 private:
 	bool initialized = false;
 	int count = 0;
-	int timeSlots[21];
+	double timeSlots[30000];
 };
 
 } // End Swarms namespace

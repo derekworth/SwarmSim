@@ -199,7 +199,7 @@ private:
 	uint64_t  msnTimeout;
 	int msnTimeoutCount;
 	MsnState currState;
-	bool newWaypointSet;
+	int newWaypointSet;
 
 	// mavlink message tracking
 	int     messageTSs[10000]; // timestamps

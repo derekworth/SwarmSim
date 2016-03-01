@@ -104,7 +104,7 @@ PixhawkAP::PixhawkAP() {
 	msnTimeout       = 0;
 	msnTimeoutCount  = 0;
 	currState        = SEND_COUNT;
-	newWaypointSet   = false;
+	newWaypointSet   = 0;
 	portNum          = 0;
 	mode = nullptr;
 	setMode(new Basic::String("nav"));
@@ -328,7 +328,7 @@ void PixhawkAP::setWaypoint(const osg::Vec3& posNED, const LCreal altMeters) {
 	}
 
 	dwAlt = altMeters;
-	newWaypointSet = true;
+	newWaypointSet = 0;
 }
 
 //------------------------------------------------------------------------------------
@@ -635,7 +635,7 @@ void PixhawkAP::sendDynamicWaypoint() {
 	case AWAIT_ACK:
 		if (msnAckRcvd) {
 			currState = SEND_COUNT;
-			newWaypointSet = false;
+			newWaypointSet++;
 		} else if (msnTimeout < usecSinceSystemBoot()) {
 			//msnTimeoutCount++;
 			//if (msnTimeoutCount < 5) { // retry to send item up to 5 times
@@ -679,16 +679,18 @@ void PixhawkAP::updatePX4() {
 		hil_gps_time += 100000; // advance by 100 ms (100K usec) = 10 Hz
 		sendHilGps();
 	}
-
-	if (newWaypointSet) {
+	
+	if (newWaypointSet < 2) { // sent twice for direct waypoint navigation (rather than 45 deg angle to line between previous and current waypoint)
 		sendDynamicWaypoint();
 	}
-
 }
 
 void PixhawkAP::receive() {
 	// receive serial data
 	if (isSerialOpen()) { // prevents read attempts to closed ports
+		if (getSerialDataWaiting() > 11000) { // serial buffer size is 12 KB
+			cout << "\nWARNING: full serial buffer detected, indicating dropped MAVLink message(s)\n";
+		}
 		while (getSerialDataWaiting() > bufferSize) { // wait until we have enough data to fill buffer
 			setSerialReadData(lpBuffer, bufferSize); // refill buffer
 			while (bytesRead < bufferSize) { // read one byte at a time
@@ -797,8 +799,8 @@ void PixhawkAP::dynamics(const LCreal dt) {
 	//cout << "\rpitch: " << hcPitchCtrl << " | roll: " << hcRollCtrl << " | yaw: " << hcYawCtrl << " | throttle: " << hcThrottleCtrl << "                             ";
 
 	// push UAV attitude/position/etc to PX4
-	receive();
 	updatePX4();
+	receive();
 
 	BaseClass::updateData(dt);
 }
