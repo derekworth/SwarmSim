@@ -10,7 +10,7 @@ Air Force Institute of Technology
 
 A Sept 2015 version of the OpenEaagles simulation framework ('OpenEaagles' and
 'OpenEaagles3rdParty' directories) is included as well as extension to that
-framework ('OpenEaaglesSwarmSims') that enables the modeling of swarm simulations.
+framework ('OpenEaaglesSwarmSims') that enables the modeling of UAV swarms.
 
 For the latest OpenEaagles source code, see:
 https://github.com/doughodson, http://www.openeaagles.org/
